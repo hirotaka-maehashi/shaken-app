@@ -2,16 +2,9 @@
 import styles from './page.module.css'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { ShieldCheckIcon } from '@heroicons/react/24/outline'
-import { ShieldCheck, ClipboardList, Users, FileText, Layers, BarChart, EyeOff, TrendingUp } from 'lucide-react'
 import { BanknotesIcon } from '@heroicons/react/24/outline'
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline'
-import { BuildingOfficeIcon,} from '@heroicons/react/24/outline'
-import {
-  BuildingLibraryIcon,
-  CubeIcon // ← 汎用（運送業などにも使える）
-} from '@heroicons/react/24/outline'
-
-
+import { BuildingOfficeIcon, CubeIcon } from '@heroicons/react/24/outline'
 import {
   ClipboardDocumentCheckIcon,
   UserGroupIcon,
@@ -21,9 +14,6 @@ import {
   EyeSlashIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
-// JSX
-<ShieldCheck className={styles.cardIcon} />
-
 
 export default function HomePage() {
   return (
