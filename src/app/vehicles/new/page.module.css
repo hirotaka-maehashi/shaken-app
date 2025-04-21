@@ -1,5 +1,71 @@
-/* src/app/vehicles/new/page.module.css */
-.vehicleForm {
-    padding: 16px;
-  }
-  
+.container {
+  padding: 24px;
+  max-width: 700px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+
+.heading {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.subheading {
+  font-size: 1.2rem;
+  margin: 24px 0 12px;
+  color: #333;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.textarea {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  min-height: 80px;
+}
+
+.button {
+  background-color: #0070f3;
+  color: white;
+  padding: 12px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #005bd1;
+}
+
+.divider {
+  margin: 24px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}

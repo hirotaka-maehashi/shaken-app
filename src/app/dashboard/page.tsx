@@ -1,4 +1,6 @@
 // src/app/dashboard/page.tsx
+'use client'
+
 import dynamic from 'next/dynamic'
 
 const ClientDashboard = dynamic(() => import('./client-page'), { ssr: false })

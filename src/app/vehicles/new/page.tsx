@@ -8,9 +8,13 @@ import styles from './page.module.css'
 export default function NewVehiclePage() {
   const router = useRouter()
   const [notificationType, setNotificationType] = useState('group')
-  const [companyId, setCompanyId] = useState('') // ← 正しい変数名に統一（キャメルケース）
+  const [companyId, setCompanyId] = useState('')
+  const [maintenanceData, setMaintenanceData] = useState({
+    type: '',
+    next_due_date: '',
+    note: '',
+  })
 
-  // 会社IDを取得
   useEffect(() => {
     const fetchCompanyId = async () => {
       const { data: userData } = await supabase.auth.getUser()
@@ -22,7 +26,6 @@ export default function NewVehiclePage() {
     fetchCompanyId()
   }, [])
 
-  // フォームデータ
   const [formData, setFormData] = useState({
     company_name: '',
     branch_name: '',
@@ -37,31 +40,77 @@ export default function NewVehiclePage() {
     note: '',
   })
 
-  // 入力変更時の処理
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  // 登録処理
+  const handleMaintenanceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setMaintenanceData({ ...maintenanceData, [e.target.name]: e.target.value })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    const { data: userDataForPlan } = await supabase.auth.getUser()
+    const user = userDataForPlan?.user
+    const plan = user?.user_metadata?.plan || 'light'
+    const planLimits: Record<string, number> = {
+      light: 3,
+      standard: 20,
+      premium: Infinity,
+    }
+    const maxVehicles = planLimits[plan]
+
+    const { count, error: countError } = await supabase
+      .from('vehicles')
+      .select('*', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+
+    if (countError) {
+      alert('台数確認に失敗しました: ' + countError.message)
+      return
+    }
+    if (count !== null && maxVehicles !== Infinity && count >= maxVehicles) {
+      alert(`このプランでは ${maxVehicles} 台まで登録できます。プランアップグレードをご検討ください。`)
+      return
+    }
 
     const { data: userData } = await supabase.auth.getUser()
     const user_id = userData?.user?.id
 
-    const { error } = await supabase.from('vehicles').insert([
+    const { data: insertedVehicle, error } = await supabase
+      .from('vehicles')
+      .insert([
+        {
+          user_id,
+          company_id: companyId,
+          ...formData,
+          notification_type: notificationType,
+        },
+      ])
+      .select()
+      .single()
+
+    if (error || !insertedVehicle) {
+      alert('登録に失敗しました: ' + error?.message)
+      return
+    }
+
+    // 整備スケジュールも登録
+    const { error: maintenanceError } = await supabase.from('maintenance_schedule').insert([
       {
-        user_id,
-        company_id: companyId, // ← ステートから取得した companyId を保存！
-        ...formData,
-        notification_type: notificationType,
-      }
+        company_id: companyId,
+        vehicle_id: insertedVehicle.id,
+        type: maintenanceData.type,
+        next_due_date: maintenanceData.next_due_date,
+        note: maintenanceData.note,
+      },
     ])
 
-    if (error) {
-      alert('登録に失敗しました: ' + error.message)
+    if (maintenanceError) {
+      alert('整備予定の登録に失敗しました: ' + maintenanceError.message)
     } else {
-      alert('登録が完了しました')
+      alert('車両と整備予定を登録しました')
       router.refresh()
     }
   }
@@ -70,7 +119,6 @@ export default function NewVehiclePage() {
     <div className={styles.container}>
       <h1 className={styles.heading}>車両情報の登録</h1>
       <form onSubmit={handleSubmit} className={styles.form}>
-        {/* 以下は必要に応じて company_name 入力を消すことも可能！ */}
         <div className={styles.group}>
           <label className={styles.label}>営業所・拠点名</label>
           <input name="branch_name" required placeholder="例：東京営業所" onChange={handleChange} className={styles.input} />
@@ -138,8 +186,27 @@ export default function NewVehiclePage() {
           <textarea name="note" placeholder="例：夏にタイヤ交換予定" onChange={handleChange} className={styles.textarea} />
         </div>
 
+        {/* 整備スケジュールの入力欄 */}
+        <hr className={styles.divider} />
+        <h2 className={styles.subheading}>初回整備スケジュール（任意）</h2>
+
+        <div className={styles.group}>
+          <label className={styles.label}>整備種別</label>
+          <input name="type" placeholder="例：法定6ヶ月点検" onChange={handleMaintenanceChange} className={styles.input} />
+        </div>
+
+        <div className={styles.group}>
+          <label className={styles.label}>整備予定日</label>
+          <input name="next_due_date" type="date" onChange={handleMaintenanceChange} className={styles.input} />
+        </div>
+
+        <div className={styles.group}>
+          <label className={styles.label}>整備メモ（任意）</label>
+          <textarea name="note" placeholder="例：オイル交換も実施予定" onChange={handleMaintenanceChange} className={styles.textarea} />
+        </div>
+
         <button type="submit" className={styles.button}>登録する</button>
       </form>
     </div>
   )
-}
+} 

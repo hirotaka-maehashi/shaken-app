@@ -17,44 +17,63 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
-
+  
     const today = new Date().toISOString()
-
-    // Step 1: 会社を登録（companiesテーブルにINSERT）
+  
+    // ✅ Step 1: ユーザー登録
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    })
+  
+    if (signUpError || !signUpData.user) {
+      setError('ユーザー登録に失敗しました：' + signUpError?.message)
+      return
+    }
+  
+    // ✅ Step 1.5: 明示的にログイン（トークン確定）
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+  
+    if (signInError) {
+      setError('自動ログインに失敗しました：' + signInError.message)
+      return
+    }
+  
+    // ✅ Step 2: 認証済セッションで companies に INSERT
     const { data: companyData, error: companyError } = await supabase
       .from('companies')
       .insert([{ name: companyName }])
       .select()
       .single()
-
-    if (companyError) {
-      setError('法人登録に失敗しました：' + companyError.message)
+  
+    if (companyError || !companyData) {
+      setError('法人登録に失敗しました：' + companyError?.message)
       return
     }
-
+  
     const companyId = companyData.id
-
-    // Step 2: ユーザーをAuthに登録し、company_idを含める
-    const { error: signupError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          company_id: companyId,
-          company_name: companyName,
-          plan: 'trial_light',
-          trial_start: today
-        }
+  
+    // ✅ Step 3: user_metadata に company_id を反映
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: {
+        company_id: companyId,
+        company_name: companyName,
+        plan: 'trial_light',
+        trial_start: today
       }
     })
-
-    if (signupError) {
-      setError('ユーザー登録に失敗しました：' + signupError.message)
-    } else {
-      setSuccess('登録が完了しました。ログイン画面に移動します...')
-      setTimeout(() => router.push('/login'), 1500)
+  
+    if (updateError) {
+      setError('ユーザー情報の更新に失敗しました：' + updateError.message)
+      return
     }
-  }
+  
+    setSuccess('登録が完了しました。ログイン画面に移動します...')
+    setTimeout(() => router.push('/login'), 1500)
+  }  
 
   return (
     <div className={styles.container}>

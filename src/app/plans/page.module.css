@@ -1,0 +1,153 @@
+.container {
+    padding: 40px;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: sans-serif;
+  }
+  
+  .heading {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  
+  .planGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  
+  .planCard {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: left;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .planCard:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .planTitle {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #0070f3;
+  }
+  
+  .price {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #333;
+  }
+  
+  .featureList {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  .featureList li {
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 0.95rem;
+    color: #555;
+  }
+  
+  .note {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #444;
+    margin-top: 24px;
+  }
+  
+  .contactButton {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 20px;
+    background-color: #0070f3;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  
+  .contactButton:hover {
+    background-color: #005bd1;
+  }
+  
+  .backLinkWrapper {
+    text-align: center;
+    margin-top: 24px;
+  }
+  
+  .backButton {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 10px 20px;
+    background-color: #eaeaea;
+    color: #333;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .backButton:hover {
+    background-color: #d4d4d4;
+  }
+  
+  /* ▼ セレクター（台数選択） */
+  .selector {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .selector label {
+    font-weight: 500;
+    margin-right: 8px;
+  }
+  
+  .selector select {
+    padding: 8px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  /* ✅ 追加セレクター：大型スタイル */
+  .selectorLarge {
+    margin: 16px 0;
+    text-align: center;
+    font-size: 1.2rem;
+  }
+  
+  .selectorLarge select {
+    font-size: 1.1rem;
+    padding: 10px 16px;
+    border-radius: 8px;
+  }
+  
+  /* 💡ステップ説明ボックス */
+  .instructionsBox {
+    background-color: #fef3c7; /* やや黄色系で目立たせる */
+    padding: 16px;
+    border-radius: 8px;
+    margin: 32px 0;
+    text-align: center;
+    border: 1px solid #fde68a;
+  }
+  
+  .instructionsStep {
+    font-weight: bold;
+    color: #b45309;
+    font-size: 1.05rem;
+    margin: 10px 0;
+  }
+  
