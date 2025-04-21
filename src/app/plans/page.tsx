@@ -2,7 +2,6 @@
 
 import styles from './page.module.css'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
