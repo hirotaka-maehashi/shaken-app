@@ -13,7 +13,6 @@ const supabase = createClient(
 )
 
 export default function PlansPage() {
-  const router = useRouter()
   const [quantity, setQuantity] = useState(1)
   const [userId, setUserId] = useState<string | null>(null)
 

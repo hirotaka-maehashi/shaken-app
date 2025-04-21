@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '../../../lib/stripe'
 import { supabaseAdmin } from '../../../../utils/supabase-admin'
-
+import { Stripe } from 'stripe'
 
 export const config = {
   api: {
@@ -22,13 +22,14 @@ export async function POST(req: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
-  } catch (err: any) {
-    console.error('Webhook Error:', err.message)
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 })
+  } catch (err: unknown) {
+    const error = err as Error
+    console.error('Webhook Error:', error.message)
+    return new Response(`Webhook Error: ${error.message}`, { status: 400 })
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as any // ← 型指定してもOK（Session型が欲しければ付けられます）
+    const session = event.data.object as Stripe.Checkout.Session
 
     const userId = session.metadata?.user_id
     const plan = session.metadata?.plan
