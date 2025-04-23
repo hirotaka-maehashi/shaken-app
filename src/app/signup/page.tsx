@@ -6,7 +6,6 @@ import { supabase } from '@/utils/supabase-browser'
 import styles from './page.module.css'
 
 export default function SignupPage() {
-  const router = useRouter()
   const [companyName, setCompanyName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,8 +16,6 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
-
-    const today = new Date().toISOString()
 
     // ✅ Step 1: ユーザー登録（リダイレクトURLを明示）
     const emailRedirectTo = process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:3000/login'

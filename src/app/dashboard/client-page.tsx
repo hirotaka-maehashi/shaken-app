@@ -5,6 +5,7 @@ import { supabase } from '@/utils/supabase-browser'
 import styles from './page.module.css'
 import { Clock, AlertCircle, ChevronRight, Settings, LogOut, PlusCircle, Search, LayoutDashboard } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 type Vehicle = {
   id: string
@@ -40,7 +41,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkSessionAndFetchData = async () => {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+      const { data: sessionData, error: _ } = await supabase.auth.getSession()
   
       if (!sessionData.session) {
         router.push('/login') // 🔐 未ログインならログイン画面へ強制遷移
@@ -54,15 +55,23 @@ export default function DashboardPage() {
       setCompanyName(metadata.company_name || user?.email || '')
       setPlan(metadata.plan || '')
   
-      if (metadata.plan === 'trial_light' && metadata.trial_start) {
-        const startDate = new Date(metadata.trial_start)
-        const today = new Date()
-        const msPerDay = 1000 * 60 * 60 * 24
-        const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / msPerDay)
-        const remaining = 14 - daysPassed
-        setTrialRemainingDays(remaining)
-        setIsTrialExpired(remaining <= 0)
-      }
+      if (metadata.plan === 'trial_light') {
+        const trialStartRaw = metadata.trial_start
+      
+        if (trialStartRaw) {
+          const startDate = new Date(trialStartRaw)
+          const today = new Date()
+          const msPerDay = 1000 * 60 * 60 * 24
+          const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / msPerDay)
+          const remaining = 14 - daysPassed
+          setTrialRemainingDays(remaining)
+          setIsTrialExpired(remaining <= 0)
+        } else {
+          // trial_start が存在しない場合の安全フォールバック（初期値として14日間を設定）
+          setTrialRemainingDays(14)
+          setIsTrialExpired(false)
+        }
+      }      
   
       const { data: vehicleData, error: vehicleError } = await supabase
         .from('vehicles')
@@ -106,7 +115,7 @@ export default function DashboardPage() {
   return (
     <div className={styles.pageWrapper}>
       <div className={styles.brandHeader}>
-        <img src="/logo/logo.png" alt="車検くんロゴ" className={styles.logoMain} />
+      <Image src="/logo/logo.png"alt="車検くんロゴ"width={160}height={40}className={styles.logoMain}/>
         <span className={styles.brandSubtitle}>法人向け車両管理システム</span>
       </div>
 

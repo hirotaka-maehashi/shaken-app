@@ -9,7 +9,8 @@ import { useSearchParams } from 'next/navigation'
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-const from = searchParams.get('from')
+  const from = searchParams.get('from')
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,14 +19,33 @@ const from = searchParams.get('from')
     e.preventDefault()
     setError('')
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) {
+    if (loginError) {
       setError('ログインに失敗しました。メールアドレスとパスワードを確認してください。')
     } else {
+      // ✅ ログイン成功後に trial_start を一度だけ登録（初回ログイン時）
+      const { data: userData } = await supabase.auth.getUser()
+      const metadata = userData.user?.user_metadata || {}
+
+      if (!metadata.trial_start) {
+        const today = new Date().toISOString()
+
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: {
+            trial_start: today,
+            plan: 'trial_light',
+          },
+        })
+
+        if (updateError) {
+          console.error('ユーザー情報の更新に失敗しました：', updateError.message)
+        }
+      }
+
       router.push('/dashboard')
     }
   }
@@ -34,8 +54,8 @@ const from = searchParams.get('from')
     <div className={styles.container}>
       <h1 className={styles.heading}>ログイン</h1>
       {from === 'email' && (
-  <p className={styles.notice}>✅ メール認証が完了しました。ログインしてください。</p>
-)}
+        <p className={styles.notice}>✅ メール認証が完了しました。ログインしてください。</p>
+      )}
       <form onSubmit={handleLogin} className={styles.form}>
         <div className={styles.group}>
           <label className={styles.label}>メールアドレス</label>

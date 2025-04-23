@@ -16,9 +16,9 @@ import {
   EyeSlashIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
-import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase-browser'
+import Image from 'next/image'
 
 export default function HomePage() {
   const router = useRouter()
@@ -28,7 +28,13 @@ export default function HomePage() {
       {/* ヘッダー */}
       <header className={styles.header}>
   <div className={styles.wrapper}>
-    <img src="/logo/logo.png" alt="車検くんロゴ" className={styles.logo} />
+  <Image
+  src="/logo/logo.png"
+  alt="車検くんロゴ"
+  width={160}
+  height={40}
+  className={styles.logoMain}
+/>
     <nav className={styles.nav}>
   <div className={styles.navLinks}>
     <a href="#features">特徴</a>
