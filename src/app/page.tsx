@@ -1,4 +1,6 @@
 // src/app/page.tsx
+'use client' // ←これが必須！！！
+
 import styles from './page.module.css'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
 import { ShieldCheckIcon } from '@heroicons/react/24/outline'
@@ -14,8 +16,28 @@ import {
   EyeSlashIcon,
   ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/utils/supabase-browser'
 
 export default function HomePage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data, error } = await supabase.auth.getSession()
+      console.log('セッション確認：', data.session, 'エラー：', error)
+  
+      if (data.session) {
+        router.push('/dashboard')
+      } else if (window.location.hash.includes('access_token')) {
+        router.push('/login')
+      }
+    }
+  
+    checkSession()
+  }, [])
+   
   return (
     <div className={styles.wrapper}>
       {/* ヘッダー */}
