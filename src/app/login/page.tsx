@@ -1,19 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase-browser'
 import styles from './page.module.css'
-import { useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const from = searchParams.get('from')
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [fromEmail, setFromEmail] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      setFromEmail(params.get('from') === 'email')
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +31,6 @@ export default function LoginPage() {
     if (loginError) {
       setError('ログインに失敗しました。メールアドレスとパスワードを確認してください。')
     } else {
-      // ✅ ログイン成功後に trial_start を一度だけ登録（初回ログイン時）
       const { data: userData } = await supabase.auth.getUser()
       const metadata = userData.user?.user_metadata || {}
 
@@ -53,7 +56,7 @@ export default function LoginPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>ログイン</h1>
-      {from === 'email' && (
+      {fromEmail && (
         <p className={styles.notice}>✅ メール認証が完了しました。ログインしてください。</p>
       )}
       <form onSubmit={handleLogin} className={styles.form}>
