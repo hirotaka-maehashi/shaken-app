@@ -22,21 +22,6 @@ import { supabase } from '@/utils/supabase-browser'
 
 export default function HomePage() {
   const router = useRouter()
-
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data, error } = await supabase.auth.getSession()
-      console.log('セッション確認：', data.session, 'エラー：', error)
-  
-      if (data.session) {
-        router.push('/dashboard')
-      } else if (window.location.hash.includes('access_token')) {
-        router.push('/login')
-      }
-    }
-  
-    checkSession()
-  }, [])
    
   return (
     <div className={styles.wrapper}>

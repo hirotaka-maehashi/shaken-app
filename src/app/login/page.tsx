@@ -4,9 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase-browser'
 import styles from './page.module.css'
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+const from = searchParams.get('from')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -30,6 +33,9 @@ export default function LoginPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>ログイン</h1>
+      {from === 'email' && (
+  <p className={styles.notice}>✅ メール認証が完了しました。ログインしてください。</p>
+)}
       <form onSubmit={handleLogin} className={styles.form}>
         <div className={styles.group}>
           <label className={styles.label}>メールアドレス</label>

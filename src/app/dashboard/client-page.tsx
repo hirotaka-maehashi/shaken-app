@@ -39,14 +39,21 @@ export default function DashboardPage() {
   const maxVehicles = plan ? planLimits[plan] : null
 
   useEffect(() => {
-    const fetchData = async () => {
+    const checkSessionAndFetchData = async () => {
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+  
+      if (!sessionData.session) {
+        router.push('/login') // 🔐 未ログインならログイン画面へ強制遷移
+        return
+      }
+  
       const { data: userData } = await supabase.auth.getUser()
       const user = userData.user
       const metadata = user?.user_metadata || {}
-
+  
       setCompanyName(metadata.company_name || user?.email || '')
       setPlan(metadata.plan || '')
-
+  
       if (metadata.plan === 'trial_light' && metadata.trial_start) {
         const startDate = new Date(metadata.trial_start)
         const today = new Date()
@@ -56,36 +63,35 @@ export default function DashboardPage() {
         setTrialRemainingDays(remaining)
         setIsTrialExpired(remaining <= 0)
       }
-
+  
       const { data: vehicleData, error: vehicleError } = await supabase
         .from('vehicles')
         .select('*')
         .eq('user_id', user?.id)
         .order('inspection_date', { ascending: true })
-
+  
       if (!vehicleError && vehicleData) {
         setVehicles(vehicleData)
       }
-
-      // 整備予定取得（今月分）
+  
       const { data: maintenanceData, error: maintenanceError } = await supabase
         .from('maintenance_schedule')
         .select('next_due_date')
         .eq('company_id', metadata.company_id)
-
+  
       if (!maintenanceError && maintenanceData) {
         const upcoming = maintenanceData.filter((item) => {
           const dueMonth = new Date(item.next_due_date).getMonth() + 1
-          return dueMonth === currentMonth
+          return dueMonth === new Date().getMonth() + 1
         })
         setMaintenanceCount(upcoming.length)
       }
-
+  
       setLoading(false)
     }
-
-    fetchData()
-  }, [])
+  
+    checkSessionAndFetchData()
+  }, [router])  
 
   const thisMonthVehicles = vehicles.filter((v) => {
     const month = new Date(v.inspection_date).getMonth() + 1

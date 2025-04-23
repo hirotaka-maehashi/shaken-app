@@ -20,69 +20,29 @@ export default function SignupPage() {
 
     const today = new Date().toISOString()
 
-    // ✅ Step 1: ユーザー登録
+    // ✅ Step 1: ユーザー登録（リダイレクトURLを明示）
+    const emailRedirectTo = process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:3000/login'
+
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-    })
+      options: {
+        emailRedirectTo,
+      },
+    })    
 
     if (signUpError || !signUpData.user) {
       setError('ユーザー登録に失敗しました：' + signUpError?.message)
       return
     }
 
-    // 📩 確認メール送信の案内＋注意文
     setSuccess(
       '確認メールを送信しました。メール内のリンクをクリックして認証を完了してください。\n' +
       '※メールが届かない場合は、迷惑メールフォルダやプロモーションタブもご確認ください。'
     )
 
-    // ✅ Step 1.5: 明示的にログイン（失敗しても許容）
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (signInError) {
-      if (signInError.message.includes('Email not confirmed')) {
-        setError('メールアドレスの確認が完了していません。メール内のリンクをクリックして認証を完了してください。')
-      } else {
-        setError('自動ログインに失敗しました：' + signInError.message)
-      }
-      return
-    }
-
-    // ✅ Step 2: 認証済セッションで companies に INSERT
-    const { data: companyData, error: companyError } = await supabase
-      .from('companies')
-      .insert([{ name: companyName }])
-      .select()
-      .single()
-
-    if (companyError || !companyData) {
-      setError('法人登録に失敗しました：' + companyError?.message)
-      return
-    }
-
-    const companyId = companyData.id
-
-    // ✅ Step 3: user_metadata に company_id を反映
-    const { error: updateError } = await supabase.auth.updateUser({
-      data: {
-        company_id: companyId,
-        company_name: companyName,
-        plan: 'trial_light',
-        trial_start: today,
-      },
-    })
-
-    if (updateError) {
-      setError('ユーザー情報の更新に失敗しました：' + updateError.message)
-      return
-    }
-
-    setSuccess('登録が完了しました。ログイン画面に移動します...')
-    setTimeout(() => router.push('/login'), 1500)
+    // ✅ 法人情報はログイン後に登録するように変更（セッションがまだ無効なため）
+    // ここでは処理終了。次のログイン画面で再度会社情報の反映を行う流れでもOK
   }
 
   return (
