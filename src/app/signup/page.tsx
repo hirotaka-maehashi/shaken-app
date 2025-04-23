@@ -15,9 +15,9 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
     setSuccess('')
-  
+
     const emailRedirectTo = process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:3000/login'
-  
+
     // ✅ Step1: ユーザー登録
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -26,41 +26,29 @@ export default function SignupPage() {
         emailRedirectTo,
       },
     })
-  
+
     if (signUpError || !signUpData.user) {
       setError('ユーザー登録に失敗しました：' + signUpError?.message)
       return
     }
-  
-    // ✅ Step2: 会社名を companies テーブルに登録
-    const { data: companyData, error: companyError } = await supabase
-      .from('companies')
-      .insert([{ name: companyName }])
-      .select()
-      .single()
-  
-    if (companyError || !companyData?.id) {
-      setError('会社情報の保存に失敗しました：' + companyError?.message)
-      return
-    }
-  
-    // ✅ Step3: user_metadata に company_id を保存
+
+    // ✅ Step2: 会社名だけ user_metadata に保存（会社情報の登録はログイン後に実行）
     const { error: updateError } = await supabase.auth.updateUser({
       data: {
-        company_id: companyData.id,
+        company_name: companyName,
       },
     })
-  
+
     if (updateError) {
       console.error('ユーザー情報の更新に失敗：', updateError.message)
     }
-  
-    // ✅ Step4: 表示用メッセージ
+
+    // ✅ Step3: 表示用メッセージ
     setSuccess(
       '確認メールを送信しました。メール内のリンクをクリックして認証を完了してください。\n' +
       '※メールが届かない場合は、迷惑メールフォルダやプロモーションタブもご確認ください。'
     )
-  }  
+  }
 
   return (
     <div className={styles.container}>
