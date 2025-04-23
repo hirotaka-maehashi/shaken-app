@@ -16,7 +16,6 @@ export default function SignupPage() {
     setError('')
     setSuccess('')
 
-    // ✅ Step 1: ユーザー登録（リダイレクトURLを明示）
     const emailRedirectTo = process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:3000/login'
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -25,20 +24,28 @@ export default function SignupPage() {
       options: {
         emailRedirectTo,
       },
-    })    
+    })
 
     if (signUpError || !signUpData.user) {
       setError('ユーザー登録に失敗しました：' + signUpError?.message)
       return
     }
 
+    // ✅ 会社名を user_metadata に保存（ログイン後のセッションが有効なら実行される）
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: {
+        company_name: companyName,
+      },
+    })
+
+    if (updateError) {
+      console.error('ユーザー情報の更新に失敗：', updateError.message)
+    }
+
     setSuccess(
       '確認メールを送信しました。メール内のリンクをクリックして認証を完了してください。\n' +
       '※メールが届かない場合は、迷惑メールフォルダやプロモーションタブもご確認ください。'
     )
-
-    // ✅ 法人情報はログイン後に登録するように変更（セッションがまだ無効なため）
-    // ここでは処理終了。次のログイン画面で再度会社情報の反映を行う流れでもOK
   }
 
   return (

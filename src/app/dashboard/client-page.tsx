@@ -52,12 +52,34 @@ export default function DashboardPage() {
       const user = userData.user
       const metadata = user?.user_metadata || {}
   
-      setCompanyName(metadata.company_name || user?.email || '')
+      // ✅ 会社名の補完（user_metadataにまだ company_name がなければ）
+      if (!metadata.company_name && metadata.company_id) {
+        const { data: companyData, error: companyError } = await supabase
+          .from('companies')
+          .select('name')
+          .eq('id', metadata.company_id)
+          .single()
+  
+        if (!companyError && companyData?.name) {
+          await supabase.auth.updateUser({
+            data: {
+              company_name: companyData.name,
+            },
+          })
+          setCompanyName(companyData.name)
+        } else {
+          setCompanyName(user?.email || '')
+        }
+      } else {
+        // すでに company_name がある場合
+        setCompanyName(metadata.company_name || user?.email || '')
+      }
+  
       setPlan(metadata.plan || '')
   
       if (metadata.plan === 'trial_light') {
         const trialStartRaw = metadata.trial_start
-      
+  
         if (trialStartRaw) {
           const startDate = new Date(trialStartRaw)
           const today = new Date()
@@ -67,11 +89,11 @@ export default function DashboardPage() {
           setTrialRemainingDays(remaining)
           setIsTrialExpired(remaining <= 0)
         } else {
-          // trial_start が存在しない場合の安全フォールバック（初期値として14日間を設定）
+          // trial_start が存在しない場合の安全フォールバック
           setTrialRemainingDays(14)
           setIsTrialExpired(false)
         }
-      }      
+      }
   
       const { data: vehicleData, error: vehicleError } = await supabase
         .from('vehicles')
@@ -105,12 +127,12 @@ export default function DashboardPage() {
   const thisMonthVehicles = vehicles.filter((v) => {
     const month = new Date(v.inspection_date).getMonth() + 1
     return month === currentMonth
-  })
+  })  
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/login')
-  }
+  }  
 
   return (
     <div className={styles.pageWrapper}>
