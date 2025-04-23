@@ -52,9 +52,21 @@ export default function HomePage() {
     <a href="#faq">FAQ</a>
   </div>
   <div className={styles.navButtons}>
-    <a href="/signup" className={`${styles.ctaButton}`}>無料で試す</a>
-    <a href="#plans" className={`${styles.ctaButtonSecondary}`}>プランを見る</a>
-  </div>
+  <button
+    onClick={async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        router.push('/dashboard') // ログイン済みならダッシュボード
+      } else {
+        router.push('/signup?mode=trial') // 未ログインならトライアル登録へ
+      }
+    }}
+    className={styles.ctaButton}
+  >
+    無料で試す
+  </button>
+  <a href="#plans" className={styles.ctaButtonSecondary}>プランを見る</a>
+</div>
 </nav>
 
   </div>
