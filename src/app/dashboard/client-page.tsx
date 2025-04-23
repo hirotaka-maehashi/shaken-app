@@ -46,28 +46,23 @@ export default function DashboardPage() {
         router.push('/login')
         return
       }
-  
+
       const { data: userData } = await supabase.auth.getUser()
       const user = userData.user
       const metadata = user?.user_metadata || {}
-  
-      // ✅ 会社IDが未登録の場合のみ処理を実行
+
+      // 会社IDが未登録で、会社名がある場合 → 自動登録
       if (!metadata.company_id && metadata.company_name) {
-        // 1. companies テーブルに company_name を登録
         const { data: companyData, error: companyError } = await supabase
           .from('companies')
           .insert([{ name: metadata.company_name }])
           .select()
           .single()
-  
+
         if (!companyError && companyData?.id) {
-          // 2. user_metadata に company_id を保存
           const { error: updateError } = await supabase.auth.updateUser({
-            data: {
-              company_id: companyData.id,
-            },
+            data: { company_id: companyData.id },
           })
-  
           if (updateError) {
             console.error('ユーザー更新失敗:', updateError.message)
           } else {
@@ -77,44 +72,81 @@ export default function DashboardPage() {
           console.error('会社登録失敗:', companyError?.message)
         }
       }
-  
-      // ✅ company_name の表示用処理（すでにある分）
+
+      // company_name を補完して保存
       if (!metadata.company_name && metadata.company_id) {
         const { data: companyData } = await supabase
           .from('companies')
           .select('name')
           .eq('id', metadata.company_id)
           .single()
-  
+
         if (companyData?.name) {
           await supabase.auth.updateUser({
-            data: {
-              company_name: companyData.name,
-            },
+            data: { company_name: companyData.name },
           })
           setCompanyName(companyData.name)
         }
       } else {
         setCompanyName(metadata.company_name || user?.email || '')
       }
-  
+
       setPlan(metadata.plan || '')
-  
-      // ※ vehicle / maintenance 取得処理はそのままでOK
+
+      if (metadata.plan === 'trial_light') {
+        const trialStartRaw = metadata.trial_start
+        if (trialStartRaw) {
+          const startDate = new Date(trialStartRaw)
+          const today = new Date()
+          const msPerDay = 1000 * 60 * 60 * 24
+          const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / msPerDay)
+          const remaining = 14 - daysPassed
+          setTrialRemainingDays(remaining)
+          setIsTrialExpired(remaining <= 0)
+        } else {
+          setTrialRemainingDays(14)
+          setIsTrialExpired(false)
+        }
+      }
+
+      const { data: vehicleData, error: vehicleError } = await supabase
+        .from('vehicles')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('inspection_date', { ascending: true })
+
+      if (!vehicleError && vehicleData) {
+        setVehicles(vehicleData)
+      }
+
+      const { data: maintenanceData, error: maintenanceError } = await supabase
+        .from('maintenance_schedule')
+        .select('next_due_date')
+        .eq('company_id', metadata.company_id)
+
+      if (!maintenanceError && maintenanceData) {
+        const upcoming = maintenanceData.filter((item) => {
+          const dueMonth = new Date(item.next_due_date).getMonth() + 1
+          return dueMonth === new Date().getMonth() + 1
+        })
+        setMaintenanceCount(upcoming.length)
+      }
+
+      setLoading(false)
     }
-  
+
     checkSessionAndFetchData()
   }, [router])
-  
+
   const thisMonthVehicles = vehicles.filter((v) => {
     const month = new Date(v.inspection_date).getMonth() + 1
     return month === currentMonth
-  })  
+  })
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push('/login')
-  }  
+  }
 
   return (
     <div className={styles.pageWrapper}>
