@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkSessionAndFetchData = async () => {
-      const { data: sessionData, error: _ } = await supabase.auth.getSession()
+      const { data: sessionData } = await supabase.auth.getSession()
   
       if (!sessionData.session) {
         router.push('/login') // 🔐 未ログインならログイン画面へ強制遷移
