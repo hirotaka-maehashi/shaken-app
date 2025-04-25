@@ -79,3 +79,18 @@
     text-align: center;
   }
   
+  .passwordWrapper {
+    position: relative;
+  }
+  
+  .eyeButton {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  
