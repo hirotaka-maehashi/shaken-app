@@ -33,7 +33,7 @@ export default function SignupPage() {
     const emailRedirectTo = process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:3000/postsignup'
   
     // ① サインアップ処理（メール送信）
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo },
