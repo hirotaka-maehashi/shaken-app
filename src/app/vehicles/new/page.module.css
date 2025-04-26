@@ -1,22 +1,23 @@
 .container {
-  padding: 24px;
+  padding: 32px 24px;
   max-width: 700px;
   margin: 0 auto;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
 .heading {
-  font-size: 1.5rem;
-  margin-bottom: 16px;
-  font-weight: bold;
+  font-size: 1.75rem;
+  margin-bottom: 24px;
+  font-weight: 600;
+  color: #222;
 }
 
 .subheading {
   font-size: 1.2rem;
   margin: 24px 0 12px;
-  color: #333;
+  color: #555;
 }
 
 .form {
@@ -32,40 +33,85 @@
 
 .label {
   font-weight: 600;
+  font-size: 0.95rem;
+  color: #222;
   margin-bottom: 6px;
 }
 
 .input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 12px;
   font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px 16px;
+  padding-right: 36px;
+  transition: border 0.3s ease;
+}
+
+.input:focus {
+  border-color: #0070f3;
+  outline: none;
 }
 
 .textarea {
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 1rem;
-  min-height: 80px;
+  min-height: 100px;
+  resize: vertical;
 }
 
-.button {
+.buttonGroupWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.sideButtons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
   background-color: #0070f3;
   color: white;
-  padding: 12px;
+  padding: 12px 24px;
   font-size: 1rem;
+  border-radius: 8px;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
-.button:hover {
+.primaryButton:hover {
   background-color: #005bd1;
 }
 
-.divider {
-  margin: 24px 0;
-  border: none;
-  border-top: 1px solid #eee;
+.secondaryButton {
+  background-color: #eaeaea;
+  color: #333;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.secondaryButton:hover {
+  background-color: #d4d4d4;
 }

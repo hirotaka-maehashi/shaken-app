@@ -6,6 +6,7 @@ import styles from './page.module.css'
 import { Clock, AlertCircle, ChevronRight, Settings, LogOut, PlusCircle, Search, LayoutDashboard } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 
 type Vehicle = {
   id: string
@@ -13,8 +14,12 @@ type Vehicle = {
   car_model: string
   color: string
   inspection_date: string
-  company_name: string
+  company_id?: string
+  company_name?: string
   branch_name: string
+  garage_address?: string
+  notification_type?: string
+  user_id?: string
 }
 
 export default function DashboardPage() {
@@ -25,7 +30,6 @@ export default function DashboardPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [maintenanceCount, setMaintenanceCount] = useState<number>(0)
-
   const router = useRouter()
   const now = new Date()
   const currentMonth = now.getMonth() + 1
@@ -110,10 +114,10 @@ export default function DashboardPage() {
       }
 
       const { data: vehicleData, error: vehicleError } = await supabase
-        .from('vehicles')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('inspection_date', { ascending: true })
+      .from('vehicles')
+      .select('*')
+      .eq('company_id', metadata.company_id)  // ← 修正！
+      .order('inspection_date', { ascending: true })    
 
       if (!vehicleError && vehicleData) {
         setVehicles(vehicleData)
@@ -126,6 +130,7 @@ export default function DashboardPage() {
 
       if (!maintenanceError && maintenanceData) {
         const upcoming = maintenanceData.filter((item) => {
+          if (!item.next_due_date) return false
           const dueMonth = new Date(item.next_due_date).getMonth() + 1
           return dueMonth === new Date().getMonth() + 1
         })
@@ -221,15 +226,19 @@ export default function DashboardPage() {
         </section>
 
         <div className={styles.buttonWrapper}>
-          <div className={styles.buttons}>
-            <a href="/vehicles/new" className={styles.primaryButton}>
-              <PlusCircle size={18} /> 新しい車両を登録する
-            </a>
-            <a href="/vehicles" className={styles.secondaryButton}>
-              <Search size={18} /> 登録一覧を確認する
-            </a>
-          </div>
-        </div>
+  <div className={styles.buttons}>
+    <Link href="/vehicles/new">
+      <button className={styles.primaryButton}>
+        <PlusCircle size={18} /> 新しい車両を登録する
+      </button>
+    </Link>
+    <Link href="/vehicles">
+      <button className={styles.secondaryButton}>
+        <Search size={18} /> 登録一覧を確認する
+      </button>
+    </Link>
+  </div>
+</div>
 
         <div className={styles.settingsArea}>
           <div className={styles.linkGroup}>

@@ -18,7 +18,6 @@ export default function SignupPage() {
     setError('')
     setSuccess('')
   
-    // ✅ 保存前に中身をチェック＆ログ出力
     const trimmedCompanyName = companyName.trim()
   
     if (!trimmedCompanyName) {
@@ -27,13 +26,14 @@ export default function SignupPage() {
       return
     }
   
-    // 💾 正しく保存し、確認ログを出す
+    // 一時的に localStorage に会社名を保存（あとで使う可能性がある場合）
     localStorage.setItem('company_name', trimmedCompanyName)
     console.log('✅ company_name を localStorage に保存しました:', trimmedCompanyName)
   
     const emailRedirectTo = process.env.NEXT_PUBLIC_REDIRECT_URL || 'http://localhost:3000/postsignup'
   
-    const { error: signUpError } = await supabase.auth.signUp({
+    // ① サインアップ処理（メール送信）
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo },
@@ -41,6 +41,29 @@ export default function SignupPage() {
   
     if (signUpError) {
       setError('ユーザー登録に失敗しました：' + signUpError.message)
+      return
+    }
+  
+    // ② 会社情報を companies テーブルに保存
+    const { data: companyData, error: companyError } = await supabase
+      .from('companies')
+      .insert([{ name: trimmedCompanyName }])
+      .select()
+  
+    if (companyError || !companyData || !companyData[0]) {
+      setError('会社情報の保存に失敗しました')
+      return
+    }
+  
+    const companyId = companyData[0].id
+  
+    // ③ サインアップ直後のユーザーに会社IDを紐づけて保存
+    const { error: userUpdateError } = await supabase.auth.updateUser({
+      data: { company_id: companyId },
+    })
+  
+    if (userUpdateError) {
+      setError('ユーザー情報の更新に失敗しました')
       return
     }
   
@@ -54,17 +77,23 @@ export default function SignupPage() {
     <div className={styles.container}>
       <h1 className={styles.heading}>新規登録</h1>
       <form onSubmit={handleSignup} className={styles.form}>
-        <div className={styles.group}>
-          <label className={styles.label}>法人名（会社名）</label>
-          <input
-            type="text"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            className={styles.input}
-            placeholder="例：株式会社AIモータース"
-            required
-          />
-        </div>
+       
+      <div className={styles.group}>
+  <label className={styles.label}>親会社名</label>
+  <input
+    type="text"
+    value={companyName}
+    onChange={(e) => setCompanyName(e.target.value)}
+    className={styles.input}
+    placeholder="例：〇〇グループ or 株式会社〇〇"
+    required
+  />
+  <small className={styles.note}>
+    ※ 複数社で利用する場合：グループ全体を代表する会社名を入力してください。<br />
+    ※ 1社のみで利用する場合：その会社名をそのままご入力ください。
+  </small>
+</div>
+
 
         <div className={styles.group}>
           <label className={styles.label}>メールアドレス</label>

@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/utils/supabase-browser'
 import styles from './page.module.css'
+import Link from 'next/link'
+import { Search } from 'lucide-react'
 
 export default function NewVehiclePage() {
   const router = useRouter()
   const [notificationType, setNotificationType] = useState('group')
-  const [companyId, setCompanyId] = useState('')
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
   const [maintenanceData, setMaintenanceData] = useState({
     type: '',
     next_due_date: '',
@@ -16,18 +18,18 @@ export default function NewVehiclePage() {
   })
 
   useEffect(() => {
-    const fetchCompanyId = async () => {
-      const { data: userData } = await supabase.auth.getUser()
-      const metadata = userData?.user?.user_metadata
-      if (metadata?.company_id) {
-        setCompanyId(metadata.company_id)
+    const fetchCompanies = async () => {
+      const { data, error } = await supabase.from('companies').select('id, name')
+      if (!error && data) {
+        setCompanies(data)
       }
     }
-    fetchCompanyId()
+    fetchCompanies()
   }, [])
 
   const [formData, setFormData] = useState({
-    company_name: '',
+    company_id: '',
+    new_company_name: '',
     branch_name: '',
     number_plate: '',
     car_model: '',
@@ -51,6 +53,24 @@ export default function NewVehiclePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    let companyIdToUse = formData.company_id
+
+    // 新しい法人名が入力されていて、既存選択がない場合は新規登録
+    if (!companyIdToUse && formData.new_company_name) {
+      const { data: newCompany, error: companyInsertError } = await supabase
+        .from('companies')
+        .insert({ name: formData.new_company_name })
+        .select()
+        .single()
+
+      if (companyInsertError || !newCompany) {
+        alert('法人の登録に失敗しました: ' + companyInsertError?.message)
+        return
+      }
+
+      companyIdToUse = newCompany.id
+    }
+
     const { data: userDataForPlan } = await supabase.auth.getUser()
     const user = userDataForPlan?.user
     const plan = user?.user_metadata?.plan || 'light'
@@ -64,7 +84,7 @@ export default function NewVehiclePage() {
     const { count, error: countError } = await supabase
       .from('vehicles')
       .select('*', { count: 'exact', head: true })
-      .eq('company_id', companyId)
+      .eq('company_id', companyIdToUse)
 
     if (countError) {
       alert('台数確認に失敗しました: ' + countError.message)
@@ -83,7 +103,6 @@ export default function NewVehiclePage() {
       .insert([
         {
           user_id,
-          company_id: companyId,
           ...formData,
           notification_type: notificationType,
         },
@@ -96,10 +115,9 @@ export default function NewVehiclePage() {
       return
     }
 
-    // 整備スケジュールも登録
     const { error: maintenanceError } = await supabase.from('maintenance_schedule').insert([
       {
-        company_id: companyId,
+        company_id: companyIdToUse,
         vehicle_id: insertedVehicle.id,
         type: maintenanceData.type,
         next_due_date: maintenanceData.next_due_date,
@@ -119,6 +137,34 @@ export default function NewVehiclePage() {
     <div className={styles.container}>
       <h1 className={styles.heading}>車両情報の登録</h1>
       <form onSubmit={handleSubmit} className={styles.form}>
+        <div className={styles.group}>
+          <label className={styles.label}>使用法人</label>
+          <select
+            name="company_id"
+            required
+            onChange={handleChange}
+            className={styles.input}
+            value={formData.company_id}
+          >
+            <option value="">選択してください</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.group}>
+  <label className={styles.label}>法人名が見つからない場合は直接入力（任意）</label>
+  <input
+    name="new_company_name"
+    placeholder="例：株式会社◯◯"
+    onChange={handleChange}
+    className={styles.input}
+  />
+</div>
+
         <div className={styles.group}>
           <label className={styles.label}>営業所・拠点名</label>
           <input name="branch_name" required placeholder="例：東京営業所" onChange={handleChange} className={styles.input} />
@@ -205,8 +251,28 @@ export default function NewVehiclePage() {
           <textarea name="note" placeholder="例：オイル交換も実施予定" onChange={handleMaintenanceChange} className={styles.textarea} />
         </div>
 
-        <button type="submit" className={styles.button}>登録する</button>
+        <div className={styles.buttonGroupWrapper}>
+  <div className={styles.sideButtons}>
+    <button
+      type="button"
+      onClick={() => router.push('/dashboard')}
+      className={styles.secondaryButton}
+    >
+      ← ダッシュボードに戻る
+    </button>
+
+    <Link href="/vehicles">
+      <button className={styles.secondaryButton}>
+        <Search size={18} /> 登録一覧を確認する
+      </button>
+    </Link>
+  </div>
+
+  <button type="submit" className={styles.primaryButton}>
+    登録する
+  </button>
+</div>
       </form>
     </div>
   )
-} 
+};  

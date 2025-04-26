@@ -10,57 +10,52 @@ export default function PostSignupPage() {
 
   useEffect(() => {
     const saveCompanyName = async () => {
-      const companyName = localStorage.getItem('company_name')
+      try {
+        const companyName = localStorage.getItem('company_name')
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('📦 company_name from localStorage:', companyName)
-      }
-
-      if (!companyName) {
-        setStatus('会社名が見つかりませんでした。')
         if (process.env.NODE_ENV === 'development') {
-          console.warn('❗ 会社名が localStorage に存在しません')
+          console.log('📦 company_name from localStorage:', companyName)
         }
-        return
-      }
 
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+        if (!companyName) {
+          throw new Error('会社名が localStorage に存在しません')
+        }
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🧾 sessionData:', sessionData)
-        console.log('❓ sessionError:', sessionError)
-      }
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
 
-      if (sessionError || !sessionData?.session) {
-        setStatus('認証セッションが見つかりません。')
         if (process.env.NODE_ENV === 'development') {
-          console.warn('❗ セッションが取得できませんでした')
+          console.log('🧾 sessionData:', sessionData)
+          console.log('❓ sessionError:', sessionError)
         }
-        return
-      }
 
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { company_name: companyName },
-      })
+        if (!sessionData?.session) {
+          throw new Error('セッションが取得できません')
+        }
 
-      if (updateError) {
-        setStatus('会社情報の保存に失敗しました。')
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { company_name: companyName },
+        })
+
+        if (updateError) {
+          throw updateError
+        }
+
+        localStorage.removeItem('company_name')
+
         if (process.env.NODE_ENV === 'development') {
-          console.error('❌ updateUser エラー:', updateError)
+          console.log('🧹 company_name を localStorage から削除しました')
         }
-        return
-      }
 
-      localStorage.removeItem('company_name')
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🧹 company_name を localStorage から削除しました')
-      }
+        setStatus('会社情報を保存しました。ようこそ！')
 
-      setStatus('会社情報を保存しました。ようこそ！')
-
-      setTimeout(() => {
+        setTimeout(() => {
+          router.push('/login')
+        }, 2000)
+      } catch (err) {
+        console.error('❌ エラー発生:', err)
+        setStatus('セッションが切れているか、会社情報の保存に失敗しました。再度ログインしてください。')
         router.push('/login')
-      }, 2000)
+      }
     }
 
     saveCompanyName()
