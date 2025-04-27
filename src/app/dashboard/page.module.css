@@ -364,87 +364,23 @@
     background-color: #eef2ff;
   }  
 
-  @media (max-width: 640px) {
-    @media (max-width: 640px) {
-      .brandHeader {
-        flex-direction: row;          /* ← 横並び維持に修正！ */
-        justify-content: flex-start;
-        align-items: center;
-        gap: 8px;
-      }
-    
-      .logoMain {
-        height: 48px;                /* スマホ向けに少し抑えるなら */
-      }
-    
-      .brandSubtitle {
-        font-size: 14px;
-      }
-    }    
-    
-    .buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        width: 100%;
-        max-width: 250px;
-        margin: 0 auto;
-        align-items: center;
-      }
+  .subsidiaryButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1b7054; /* 緑系 */
+  color: #fff;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+  transition: all 0.2s ease;
+}
 
-      .buttonWrapper {
-        display: flex;
-        justify-content: center;
-      }
-  
-      .primaryButton,
-      .secondaryButton {
-        width: 100%;
-        justify-content: center;
-      }
-  
-    .upgradeBlock {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0px;
-      padding: 12px 16px;
-      border-radius: var(--radius);
-      background-color: #eef2ff;
-      margin-bottom: 16px;
-    }
-  
-    .upgradeCTA {
-      width: 100%;
-      max-width: 200px;
-      text-align: center;
-      justify-content: center;
-      margin: 0 auto;
-    }
-  
-    .trialBox,
-    .trialExpired,
-    .section {
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-  
-    .settingsArea {
-      text-align: center;
-      margin-top: 32px;
-    }
-  
-    .linkGroup {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: center;
-      justify-content: center;
-    }
-  
-    .planLink,
-    .logoutLink {
-      font-size: 13px;
-    }
-  }
-  
+.subsidiaryButton:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+}

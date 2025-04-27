@@ -10,7 +10,7 @@ import { Search } from 'lucide-react'
 export default function NewVehiclePage() {
   const router = useRouter()
   const [notificationType, setNotificationType] = useState('group')
-  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
+  const [companies, setCompanies] = useState<{ id: string; name: string; parent_company_id?: string | null }[]>([])
   const [maintenanceData, setMaintenanceData] = useState({
     type: '',
     next_due_date: '',
@@ -19,7 +19,7 @@ export default function NewVehiclePage() {
 
   useEffect(() => {
     const fetchCompanies = async () => {
-      const { data, error } = await supabase.from('companies').select('id, name')
+      const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
       if (!error && data) {
         setCompanies(data)
       }
@@ -98,32 +98,57 @@ export default function NewVehiclePage() {
     const { data: userData } = await supabase.auth.getUser()
     const user_id = userData?.user?.id
 
+    const session = await supabase.auth.getSession()
+console.log('JWTの中身:', session.data.session?.user)
+
+    const {
+      new_company_name,
+      ...filteredFormData
+    } = formData
+    
+    // 選択された会社IDから会社名を取得
+    const selectedCompanyName =
+      companies.find((c) => c.id === companyIdToUse)?.name || ''
+    
     const { data: insertedVehicle, error } = await supabase
       .from('vehicles')
       .insert([
         {
           user_id,
-          ...formData,
+          ...filteredFormData,
+          company_name: selectedCompanyName, // ← 明示的に追加
           notification_type: notificationType,
         },
       ])
       .select()
-      .single()
+      .single()    
 
     if (error || !insertedVehicle) {
+      console.log('❌ vehicle insert error:', error)
       alert('登録に失敗しました: ' + error?.message)
       return
     }
 
+    console.log('送信データ:', {
+      user_id,
+      company_id: companyIdToUse,
+      vehicle_id: insertedVehicle.id,
+      type: maintenanceData.type,
+      next_due_date: maintenanceData.next_due_date,
+      note: maintenanceData.note,
+    })
+        
+
     const { error: maintenanceError } = await supabase.from('maintenance_schedule').insert([
       {
+        user_id, // ← 追加
         company_id: companyIdToUse,
         vehicle_id: insertedVehicle.id,
         type: maintenanceData.type,
         next_due_date: maintenanceData.next_due_date,
         note: maintenanceData.note,
       },
-    ])
+    ])    
 
     if (maintenanceError) {
       alert('整備予定の登録に失敗しました: ' + maintenanceError.message)
@@ -140,19 +165,19 @@ export default function NewVehiclePage() {
         <div className={styles.group}>
           <label className={styles.label}>使用法人</label>
           <select
-            name="company_id"
-            required
-            onChange={handleChange}
-            className={styles.input}
-            value={formData.company_id}
-          >
-            <option value="">選択してください</option>
-            {companies.map((company) => (
-              <option key={company.id} value={company.id}>
-                {company.name}
-              </option>
-            ))}
-          </select>
+  name="company_id"
+  required
+  onChange={handleChange}
+  className={styles.input}
+  value={formData.company_id}
+>
+  <option value="">選択してください</option>
+  {companies.map((company) => (
+    <option key={company.id} value={company.id}>
+      {company.name} {company.parent_company_id ? '(子会社)' : '(親会社)'}
+    </option>
+  ))}
+</select>
         </div>
 
         <div className={styles.group}>
