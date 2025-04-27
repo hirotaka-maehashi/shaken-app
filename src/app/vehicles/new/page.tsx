@@ -64,8 +64,6 @@ export default function NewVehiclePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    let companyIdToUse = formData.company_id
-
     const { data: userDataForPlan } = await supabase.auth.getUser()
     const user = userDataForPlan?.user
     const plan = user?.user_metadata?.plan || 'light'
