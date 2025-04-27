@@ -20,6 +20,7 @@ type Vehicle = {
   garage_address?: string
   notification_type?: string
   user_id?: string
+  next_due_date?: string | null
 }
 
 export default function DashboardPage() {
@@ -113,20 +114,38 @@ export default function DashboardPage() {
         }
       }
 
-      const { data: vehicleData, error: vehicleError } = await supabase
-      .from('vehicles')
-      .select('*')
-      .eq('company_id', metadata.company_id)  // ← 修正！
-      .order('inspection_date', { ascending: true })    
-
-      if (!vehicleError && vehicleData) {
-        setVehicles(vehicleData)
-      }
-
       const { data: maintenanceData, error: maintenanceError } = await supabase
-        .from('maintenance_schedule')
-        .select('next_due_date')
-        .eq('company_id', metadata.company_id)
+      .from('maintenance_schedule')
+      .select('*')
+      .eq('company_id', metadata.company_id)   
+
+
+// 子会社も含めて取得
+const { data: subsidiaries } = await supabase
+  .from('companies')
+  .select('id')
+  .eq('parent_company_id', metadata.company_id)
+
+const companyIds = [metadata.company_id, ...(subsidiaries?.map(s => s.id) || [])]
+
+// 車両データ取得
+const { data: vehicleData, error: vehicleError } = await supabase
+  .from('vehicles')
+  .select('*')
+  .in('company_id', companyIds)
+  .order('inspection_date', { ascending: true })
+
+      if (!vehicleError && vehicleData && maintenanceData) {
+        const mergedVehicles = vehicleData.map(vehicle => {
+          const maintenance = maintenanceData.find(m => m.vehicle_id === vehicle.id)
+          return {
+            ...vehicle,
+            next_due_date: maintenance?.next_due_date || null,
+          }
+        })
+      
+        setVehicles(mergedVehicles)
+      }      
 
       if (!maintenanceError && maintenanceData) {
         const upcoming = maintenanceData.filter((item) => {
@@ -215,13 +234,14 @@ export default function DashboardPage() {
             <p>登録された車両はまだありません。</p>
           ) : (
             <ul className={styles.list}>
-              {vehicles.slice(0, 5).map((v) => (
-                <li key={v.id} className={styles.listItem}>
-                  <strong>{v.number_plate}</strong>｜{v.car_model}（{v.color}）<br />
-                  {v.company_name} / {v.branch_name} / {v.inspection_date}
-                </li>
-              ))}
-            </ul>
+            {vehicles.slice(0, 5).map((v) => (
+              <li key={v.id} className={styles.listItem}>
+                <strong>{v.number_plate}</strong>｜{v.car_model}（{v.color}）<br />
+                {v.company_name} / {v.branch_name} / 車検期限: {v.inspection_date}<br />
+                {v.next_due_date ? `🔧 次回整備予定日: ${v.next_due_date}` : '🔧 整備予定なし'}
+              </li>
+            ))}
+          </ul>          
           )}
         </section>
 
@@ -237,6 +257,11 @@ export default function DashboardPage() {
         <Search size={18} /> 登録一覧を確認する
       </button>
     </Link>
+    <Link href="/companies/new">
+  <button className={styles.subsidiaryButton}>
+    + 子会社を登録する
+  </button>
+</Link>
   </div>
 </div>
 
