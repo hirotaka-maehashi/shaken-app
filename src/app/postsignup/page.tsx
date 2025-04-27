@@ -22,7 +22,7 @@ export default function PostSignupPage() {
         let sessionData = null
     
         while (!sessionData && retries > 0) {
-          const { data, error } = await supabase.auth.getSession()
+          const { data } = await supabase.auth.getSession()
           sessionData = data.session
     
           if (!sessionData) {

@@ -32,7 +32,6 @@ export default function VehicleListPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [loading, setLoading] = useState(true)
   const [branches, setBranches] = useState<string[]>([])
-  const [visibleBranches, setVisibleBranches] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -40,7 +39,6 @@ export default function VehicleListPage() {
       const companyId = userData?.user?.user_metadata?.company_id
       if (!companyId) return
   
-      // 子会社も含めて取得する処理を追加
       const { data: subsidiaries } = await supabase
         .from('companies')
         .select('id')
@@ -48,14 +46,12 @@ export default function VehicleListPage() {
   
       const companyIds = [companyId, ...(subsidiaries?.map(s => s.id) || [])]
   
-      // 車両データをまとめて取得（親会社＋子会社）
       const { data: vehicleData, error: vehicleError } = await supabase
         .from('vehicles')
         .select('*')
         .in('company_id', companyIds)
         .order('inspection_date', { ascending: true })
   
-      // メンテナンススケジュールもまとめて取得（親会社＋子会社）
       const { data: maintenanceData } = await supabase
         .from('maintenance_schedule')
         .select('*')
@@ -74,16 +70,14 @@ export default function VehicleListPage() {
   
         const uniqueBranches = Array.from(new Set(mergedVehicles.map((v) => v.branch_name)))
         setBranches(uniqueBranches)
-        setVisibleBranches(new Set(uniqueBranches))
       }
   
       setLoading(false)
     }
   
     fetchVehicles()
-  }, [])  //
+  }, [])
 
-  // 🔥 追加した handleDelete 関数！
   const handleDelete = async (vehicleId: string) => {
     const confirmDelete = window.confirm('この車両を削除してもよろしいですか？')
     if (!confirmDelete) return
@@ -100,33 +94,21 @@ export default function VehicleListPage() {
     }
   }
 
-  const toggleBranch = (branch: string) => {
-    setVisibleBranches((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(branch)) {
-        newSet.delete(branch)
-      } else {
-        newSet.add(branch)
-      }
-      return newSet
-    })
-  }
-
   const [companies, setCompanies] = useState<{ id: string; name: string; parent_company_id?: string | null }[]>([])
 
-useEffect(() => {
-  const fetchCompanies = async () => {
-    const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
-    if (!error && data) {
-      setCompanies(data)
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
+      if (!error && data) {
+        setCompanies(data)
+      }
     }
-  }
-  fetchCompanies()
-}, [])
+    fetchCompanies()
+  }, [])
 
-const [displayMode, setDisplayMode] = useState('company') // company または branch を切り替え
-const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set())
-const [selectedBranches, setSelectedBranches] = useState<Set<string>>(new Set())
+  const [displayMode, setDisplayMode] = useState('company')
+  const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set())
+  const [selectedBranches, setSelectedBranches] = useState<Set<string>>(new Set())
 
   return (
     <div className={styles.container}>

@@ -9,6 +9,7 @@ import { Search } from 'lucide-react'
 
 export default function NewVehiclePage() {
   const router = useRouter()
+
   const [notificationType, setNotificationType] = useState('group')
   const [companies, setCompanies] = useState<{ id: string; name: string; parent_company_id?: string | null }[]>([])
   const [maintenanceData, setMaintenanceData] = useState({
@@ -29,7 +30,6 @@ export default function NewVehiclePage() {
 
   const [formData, setFormData] = useState({
     company_id: '',
-    new_company_name: '',
     branch_name: '',
     number_plate: '',
     car_model: '',
@@ -41,6 +41,17 @@ export default function NewVehiclePage() {
     notify_address: '',
     note: '',
   })
+
+  
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
+      if (!error && data) {
+        setCompanies(data)
+      }
+    }
+    fetchCompanies()
+  }, [])  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -55,22 +66,6 @@ export default function NewVehiclePage() {
 
     let companyIdToUse = formData.company_id
 
-    // 新しい法人名が入力されていて、既存選択がない場合は新規登録
-    if (!companyIdToUse && formData.new_company_name) {
-      const { data: newCompany, error: companyInsertError } = await supabase
-        .from('companies')
-        .insert({ name: formData.new_company_name })
-        .select()
-        .single()
-
-      if (companyInsertError || !newCompany) {
-        alert('法人の登録に失敗しました: ' + companyInsertError?.message)
-        return
-      }
-
-      companyIdToUse = newCompany.id
-    }
-
     const { data: userDataForPlan } = await supabase.auth.getUser()
     const user = userDataForPlan?.user
     const plan = user?.user_metadata?.plan || 'light'
@@ -84,7 +79,7 @@ export default function NewVehiclePage() {
     const { count, error: countError } = await supabase
       .from('vehicles')
       .select('*', { count: 'exact', head: true })
-      .eq('company_id', companyIdToUse)
+      .eq('company_id', formData.company_id)
 
     if (countError) {
       alert('台数確認に失敗しました: ' + countError.message)
@@ -101,14 +96,11 @@ export default function NewVehiclePage() {
     const session = await supabase.auth.getSession()
 console.log('JWTの中身:', session.data.session?.user)
 
-    const {
-      new_company_name,
-      ...filteredFormData
-    } = formData
+const filteredFormData = formData
     
     // 選択された会社IDから会社名を取得
     const selectedCompanyName =
-      companies.find((c) => c.id === companyIdToUse)?.name || ''
+    companies.find((c) => c.id === formData.company_id)?.name || ''  
     
     const { data: insertedVehicle, error } = await supabase
       .from('vehicles')
@@ -131,7 +123,7 @@ console.log('JWTの中身:', session.data.session?.user)
 
     console.log('送信データ:', {
       user_id,
-      company_id: companyIdToUse,
+      company_id: formData.company_id,
       vehicle_id: insertedVehicle.id,
       type: maintenanceData.type,
       next_due_date: maintenanceData.next_due_date,
@@ -142,7 +134,7 @@ console.log('JWTの中身:', session.data.session?.user)
     const { error: maintenanceError } = await supabase.from('maintenance_schedule').insert([
       {
         user_id, // ← 追加
-        company_id: companyIdToUse,
+        company_id: formData.company_id,
         vehicle_id: insertedVehicle.id,
         type: maintenanceData.type,
         next_due_date: maintenanceData.next_due_date,
@@ -165,30 +157,20 @@ console.log('JWTの中身:', session.data.session?.user)
         <div className={styles.group}>
           <label className={styles.label}>使用法人</label>
           <select
-  name="company_id"
-  required
-  onChange={handleChange}
-  className={styles.input}
-  value={formData.company_id}
->
-  <option value="">選択してください</option>
-  {companies.map((company) => (
-    <option key={company.id} value={company.id}>
-      {company.name} {company.parent_company_id ? '(子会社)' : '(親会社)'}
-    </option>
-  ))}
-</select>
+            name="company_id"
+            required
+            onChange={handleChange}
+            className={styles.input}
+            value={formData.company_id}
+          >
+            <option value="">選択してください</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name} {company.parent_company_id ? '(子会社)' : '(親会社)'}
+              </option>
+            ))}
+          </select>
         </div>
-
-        <div className={styles.group}>
-  <label className={styles.label}>法人名が見つからない場合は直接入力（任意）</label>
-  <input
-    name="new_company_name"
-    placeholder="例：株式会社◯◯"
-    onChange={handleChange}
-    className={styles.input}
-  />
-</div>
 
         <div className={styles.group}>
           <label className={styles.label}>営業所・拠点名</label>
@@ -257,7 +239,6 @@ console.log('JWTの中身:', session.data.session?.user)
           <textarea name="note" placeholder="例：夏にタイヤ交換予定" onChange={handleChange} className={styles.textarea} />
         </div>
 
-        {/* 整備スケジュールの入力欄 */}
         <hr className={styles.divider} />
         <h2 className={styles.subheading}>初回整備スケジュール（任意）</h2>
 
@@ -277,27 +258,27 @@ console.log('JWTの中身:', session.data.session?.user)
         </div>
 
         <div className={styles.buttonGroupWrapper}>
-  <div className={styles.sideButtons}>
-    <button
-      type="button"
-      onClick={() => router.push('/dashboard')}
-      className={styles.secondaryButton}
-    >
-      ← ダッシュボードに戻る
-    </button>
+          <div className={styles.sideButtons}>
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard')}
+              className={styles.secondaryButton}
+            >
+              ← ダッシュボードに戻る
+            </button>
 
-    <Link href="/vehicles">
-      <button className={styles.secondaryButton}>
-        <Search size={18} /> 登録一覧を確認する
-      </button>
-    </Link>
-  </div>
+            <Link href="/vehicles">
+              <button className={styles.secondaryButton}>
+                <Search size={18} /> 登録一覧を確認する
+              </button>
+            </Link>
+          </div>
 
-  <button type="submit" className={styles.primaryButton}>
-    登録する
-  </button>
-</div>
+          <button type="submit" className={styles.primaryButton}>
+            登録する
+          </button>
+        </div>
       </form>
     </div>
   )
-};  
+  };  
