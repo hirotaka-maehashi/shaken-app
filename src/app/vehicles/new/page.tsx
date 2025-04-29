@@ -40,18 +40,15 @@ export default function NewVehiclePage() {
     notify_name: '',
     notify_address: '',
     note: '',
+    oil_change_date: '',
+    element_change_date: '',
+    tire_change_date: '',
+    battery_change_date: '',
+    last_oil_change_date: '',         
+    last_element_change_date: '',      
+    last_tire_change_date: '',       
+    last_battery_change_date: '',      
   })
-
-  
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
-      if (!error && data) {
-        setCompanies(data)
-      }
-    }
-    fetchCompanies()
-  }, [])  
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -60,6 +57,11 @@ export default function NewVehiclePage() {
   const handleMaintenanceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setMaintenanceData({ ...maintenanceData, [e.target.name]: e.target.value })
   }
+
+  // 空文字ならnullに変換する関数
+const normalizeDateField = (value: string) => {
+  return value === '' ? null : value
+}
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,12 +96,37 @@ export default function NewVehiclePage() {
     const session = await supabase.auth.getSession()
 console.log('JWTの中身:', session.data.session?.user)
 
-const filteredFormData = formData
-    
+const restFormData = formData
+
+const filteredFormData = {
+  company_id: restFormData.company_id,
+  branch_name: restFormData.branch_name,
+  number_plate: restFormData.number_plate,
+  car_model: restFormData.car_model,
+  color: restFormData.color,
+  inspection_date: normalizeDateField(restFormData.inspection_date),
+  garage_address: restFormData.garage_address,
+  line_group_id: restFormData.line_group_id,
+  notify_name: restFormData.notify_name,
+  notify_address: restFormData.notify_address,
+  note: restFormData.note,
+  oil_change_date: normalizeDateField(restFormData.oil_change_date),
+  element_change_date: normalizeDateField(restFormData.element_change_date),
+  tire_change_date: normalizeDateField(restFormData.tire_change_date),
+  battery_change_date: normalizeDateField(restFormData.battery_change_date),
+  last_oil_change_date: normalizeDateField(restFormData.last_oil_change_date),
+  last_element_change_date: normalizeDateField(restFormData.last_element_change_date),
+  last_tire_change_date: normalizeDateField(restFormData.last_tire_change_date),
+  last_battery_change_date: normalizeDateField(restFormData.last_battery_change_date),
+}
+
+const companyIdToUse = formData.company_id
     // 選択された会社IDから会社名を取得
     const selectedCompanyName =
-    companies.find((c) => c.id === formData.company_id)?.name || ''  
+      companies.find((c) => c.id === companyIdToUse)?.name || ''
     
+      console.log('送信前のfilteredFormData:', filteredFormData)
+
     const { data: insertedVehicle, error } = await supabase
       .from('vehicles')
       .insert([
@@ -152,6 +179,8 @@ const filteredFormData = formData
     <div className={styles.container}>
       <h1 className={styles.heading}>車両情報の登録</h1>
       <form onSubmit={handleSubmit} className={styles.form}>
+        {/* 基本情報 */}
+        {/* --- ここは変わらずそのまま --- */}
         <div className={styles.group}>
           <label className={styles.label}>使用法人</label>
           <select
@@ -169,37 +198,47 @@ const filteredFormData = formData
             ))}
           </select>
         </div>
-
+  
         <div className={styles.group}>
-          <label className={styles.label}>営業所・拠点名</label>
-          <input name="branch_name" required placeholder="例：東京営業所" onChange={handleChange} className={styles.input} />
-        </div>
+  <label className={styles.label}>営業所・拠点名</label>
+  <input
+    type="text"
+    name="branch_name"
+    required
+    placeholder="例：東京営業所"
+    onChange={handleChange}
+    value={formData.branch_name}
+    className={styles.input}
+  />
+</div>
 
+
+  
         <div className={styles.group}>
           <label className={styles.label}>ナンバー</label>
           <input name="number_plate" required placeholder="例：品川 300 あ 12-34" onChange={handleChange} className={styles.input} />
         </div>
-
+  
         <div className={styles.group}>
           <label className={styles.label}>車種</label>
           <input name="car_model" required placeholder="例：トヨタ ハイエース" onChange={handleChange} className={styles.input} />
         </div>
-
+  
         <div className={styles.group}>
           <label className={styles.label}>色</label>
           <input name="color" required placeholder="例：シルバー" onChange={handleChange} className={styles.input} />
         </div>
-
+  
         <div className={styles.group}>
           <label className={styles.label}>車検期限</label>
           <input type="date" name="inspection_date" required onChange={handleChange} className={styles.input} />
         </div>
-
+  
         <div className={styles.group}>
           <label className={styles.label}>使用場所（車庫の住所）</label>
           <input name="garage_address" required placeholder="例：東京都品川区〇〇" onChange={handleChange} className={styles.input} />
         </div>
-
+  
         <div className={styles.group}>
           <label className={styles.label}>通知方法</label>
           <select
@@ -211,14 +250,14 @@ const filteredFormData = formData
             <option value="direct">担当者に個別通知</option>
           </select>
         </div>
-
+  
         {notificationType === 'group' && (
           <div className={styles.group}>
             <label className={styles.label}>LINEグループID</label>
             <input name="line_group_id" required placeholder="例：line-group-1234" onChange={handleChange} className={styles.input} />
           </div>
         )}
-
+  
         {notificationType === 'direct' && (
           <>
             <div className={styles.group}>
@@ -231,30 +270,94 @@ const filteredFormData = formData
             </div>
           </>
         )}
-
+  
         <div className={styles.group}>
           <label className={styles.label}>備考（任意）</label>
           <textarea name="note" placeholder="例：夏にタイヤ交換予定" onChange={handleChange} className={styles.textarea} />
         </div>
-
+  
+        {/* 整備スケジュール */}
         <hr className={styles.divider} />
         <h2 className={styles.subheading}>初回整備スケジュール（任意）</h2>
-
+  
+        {/* 車検・点検 */}
         <div className={styles.group}>
-          <label className={styles.label}>整備種別</label>
-          <input name="type" placeholder="例：法定6ヶ月点検" onChange={handleMaintenanceChange} className={styles.input} />
+          <label className={styles.label}>整備種別（車検・法定点検）</label>
+          <input
+            name="type"
+            placeholder="例：法定6ヶ月点検"
+            onChange={handleMaintenanceChange}
+            className={styles.input}
+          />
         </div>
-
+  
         <div className={styles.group}>
-          <label className={styles.label}>整備予定日</label>
-          <input name="next_due_date" type="date" onChange={handleMaintenanceChange} className={styles.input} />
+          <label className={styles.label}>次回整備予定日（車検・点検）</label>
+          <input
+            name="next_due_date"
+            type="date"
+            onChange={handleMaintenanceChange}
+            className={styles.input}
+          />
         </div>
-
+  
+        {/* 最終整備日 */}
+        <div className={styles.group}>
+          <label className={styles.label}>最終エンジンオイル交換日</label>
+          <input
+            type="date"
+            name="last_oil_change_date"
+            onChange={handleChange}
+            value={formData.last_oil_change_date}
+            className={styles.input}
+          />
+        </div>
+  
+        <div className={styles.group}>
+          <label className={styles.label}>最終オイルエレメント交換日</label>
+          <input
+            type="date"
+            name="last_element_change_date"
+            onChange={handleChange}
+            value={formData.last_element_change_date}
+            className={styles.input}
+          />
+        </div>
+  
+        <div className={styles.group}>
+          <label className={styles.label}>最終タイヤ交換日</label>
+          <input
+            type="date"
+            name="last_tire_change_date"
+            onChange={handleChange}
+            value={formData.last_tire_change_date}
+            className={styles.input}
+          />
+        </div>
+  
+        <div className={styles.group}>
+          <label className={styles.label}>最終バッテリー交換日</label>
+          <input
+            type="date"
+            name="last_battery_change_date"
+            onChange={handleChange}
+            value={formData.last_battery_change_date}
+            className={styles.input}
+          />
+        </div>
+  
+        {/* 整備メモ */}
         <div className={styles.group}>
           <label className={styles.label}>整備メモ（任意）</label>
-          <textarea name="note" placeholder="例：オイル交換も実施予定" onChange={handleMaintenanceChange} className={styles.textarea} />
+          <textarea
+            name="note"
+            placeholder="例：オイル交換も実施予定"
+            onChange={handleMaintenanceChange}
+            className={styles.textarea}
+          />
         </div>
-
+  
+        {/* ボタン */}
         <div className={styles.buttonGroupWrapper}>
           <div className={styles.sideButtons}>
             <button
@@ -264,14 +367,14 @@ const filteredFormData = formData
             >
               ← ダッシュボードに戻る
             </button>
-
+  
             <Link href="/vehicles">
               <button className={styles.secondaryButton}>
                 <Search size={18} /> 登録一覧を確認する
               </button>
             </Link>
           </div>
-
+  
           <button type="submit" className={styles.primaryButton}>
             登録する
           </button>
@@ -279,4 +382,5 @@ const filteredFormData = formData
       </form>
     </div>
   )
-  };  
+  };
+  

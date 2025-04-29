@@ -1,0 +1,79 @@
+/* page.module.css */
+
+.container {
+    padding: 24px;
+    max-width: 700px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  }
+  
+  .heading {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .label {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .input {
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+  
+  .primaryButton {
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .primaryButton:hover {
+    background-color: #1e40af;
+  }
+  
+  .secondaryButton {
+    background-color: white;
+    color: #2563eb;
+    font-weight: bold;
+    padding: 12px;
+    border: 2px solid #2563eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  
+  .secondaryButton:hover {
+    background-color: #2563eb;
+    color: white;
+  }
+  
+  .buttonWrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  
