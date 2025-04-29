@@ -384,3 +384,36 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
 }
+
+.badge_red {
+  display: inline-block;
+  background-color: #ff4d4f; /* 赤 */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 9999px; /* 丸み */
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.badge_yellow {
+  display: inline-block;
+  background-color: #facc15; /* 黄色 */
+  color: black;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.badge_black {
+  display: inline-block;
+  background-color: #666; /* 黒っぽいグレー */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-right: 8px;
+}
