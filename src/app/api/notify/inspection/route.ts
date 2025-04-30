@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/utils/supabase-server'
 
+export const runtime = 'edge'
 export async function GET(req: NextRequest) {
   const now = new Date()
   const currentHour = now.getHours()
