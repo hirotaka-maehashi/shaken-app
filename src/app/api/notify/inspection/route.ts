@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/utils/supabase-server'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const now = new Date()
   const currentHour = now.getHours()
 
@@ -12,7 +12,11 @@ return NextResponse.json({ message: '通知時間外' })
 }
 
   const today = new Date()
-  const result: any[] = []
+  const result: {
+    id?: string
+    number_plate?: string
+    [key: string]: any
+  }[] = []
 
   // -------------------------------------
   // ✅ 1. 点検通知まとめ（vehicles）

@@ -1,9 +1,7 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
-  const cookieStore = cookies()
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
 
