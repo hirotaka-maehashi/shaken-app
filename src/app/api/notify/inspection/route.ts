@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { supabase } from '@/utils/supabase-server'
+
+export const runtime = 'edge'
 
 type NotificationItem = {
   number_plate: string
@@ -13,7 +15,7 @@ type NotificationItem = {
   target_date: string
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const now = new Date()
   const currentHour = now.getHours()
 
