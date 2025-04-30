@@ -413,14 +413,22 @@ console.log('🗓️ maintenance?.next_due_date:', maintenance?.next_due_date)
   </div>
 
   {/* 下段 */}
-  <div className={styles.buttons}>
-    <Link href="/companies/new">
-      <button className={styles.subsidiaryButton}>
-        + 子会社を登録する
-      </button>
-    </Link>
-  
-  </div>
+{/* 下段 */}
+<div className={styles.buttons}>
+  <Link href="/companies/new">
+    <button className={styles.subsidiaryButton}>
+      + 子会社を登録する
+    </button>
+  </Link>
+
+  <Link href="/settings/line">
+    <button className={styles.subsidiaryButton}>
+      + LINE設定をする
+    </button>
+  </Link>
+</div>
+
+
 </div>
   
         <div className={styles.settingsArea}>
