@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/utils/supabase-browser'  // ✅ ← Supabaseクライアント
 import styles from './page.module.css'
 
 export default function LineSettingPage() {
@@ -10,25 +11,38 @@ export default function LineSettingPage() {
   const [saved, setSaved] = useState(false)
   const router = useRouter()
 
-  // 🔹トークン保存処理
+  // 🔹トークン保存処理（APIを使わず直接保存）
   const handleSave = async () => {
-    const res = await fetch('/api/line/save-token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ token, companyName }),
-    })
+    const { data: { user }, error } = await supabase.auth.getUser()
 
-    if (res.ok) {
+    if (!user || error) {
+      alert('❌ 未ログイン状態です')
+      return
+    }
+
+    const companyId = user.user_metadata?.company_id
+    if (!companyId) {
+      alert('❌ company_id が取得できません')
+      return
+    }
+
+    const { error: insertError } = await supabase.from('line_tokens').insert([
+      {
+        token,
+        company_name: companyName,
+        company_id: companyId,
+      },
+    ])
+
+    if (insertError) {
+      alert(`❌ 保存失敗: ${insertError.message}`)
+    } else {
       setSaved(true)
     }
   }
 
-  // 🔹LINEテスト送信処理
+  // 🔹LINEテスト送信処理（この部分はAPI経由でOK）
   const handleTestSend = async () => {
-    console.log('送信する法人名:', companyName)  // ← ここ！
-
     const res = await fetch('/api/line/test-send', {
       method: 'POST',
       headers: {
