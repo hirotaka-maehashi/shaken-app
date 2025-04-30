@@ -1,22 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabase } from '@/utils/supabase-server'
+
+type NotificationItem = {
+  number_plate: string
+  car_model: string
+  color: string
+  branch_name: string
+  company_id: string
+  diffDays: number
+  stage: 'urgent' | 'warning' | 'info'
+  type: string
+  target_date: string
+}
 
 export async function GET() {
   const now = new Date()
   const currentHour = now.getHours()
 
   // ✅ 通知は朝9時のみ
- if (currentHour !== 9) {
- console.log('⏰ 通知対象外の時間です（現在: ' + currentHour + '時）')
-return NextResponse.json({ message: '通知時間外' })
-}
+  if (currentHour !== 9) {
+    console.log('⏰ 通知対象外の時間です（現在: ' + currentHour + '時）')
+    return NextResponse.json({ message: '通知時間外' })
+  }
 
   const today = new Date()
-  const result: {
-    id?: string
-    number_plate?: string
-    [key: string]: any
-  }[] = []
+  const result: NotificationItem[] = []  // ✅ 修正済み
 
   // -------------------------------------
   // ✅ 1. 点検通知まとめ（vehicles）
@@ -31,31 +39,11 @@ return NextResponse.json({ message: '通知時間外' })
   } else {
     vehicles.forEach(vehicle => {
       const checks = [
-        {
-          type: '車検',
-          baseDate: vehicle.inspection_date,
-          offsetDays: 0,
-        },
-        {
-          type: 'オイル交換',
-          baseDate: vehicle.last_oil_change_date,
-          offsetDays: 180,
-        },
-        {
-          type: 'エレメント交換',
-          baseDate: vehicle.last_element_change_date,
-          offsetDays: 180,
-        },
-        {
-          type: 'タイヤ交換',
-          baseDate: vehicle.last_tire_change_date,
-          offsetDays: 1095,
-        },
-        {
-          type: 'バッテリー交換',
-          baseDate: vehicle.last_battery_change_date,
-          offsetDays: 1095,
-        },
+        { type: '車検', baseDate: vehicle.inspection_date, offsetDays: 0 },
+        { type: 'オイル交換', baseDate: vehicle.last_oil_change_date, offsetDays: 180 },
+        { type: 'エレメント交換', baseDate: vehicle.last_element_change_date, offsetDays: 180 },
+        { type: 'タイヤ交換', baseDate: vehicle.last_tire_change_date, offsetDays: 1095 },
+        { type: 'バッテリー交換', baseDate: vehicle.last_battery_change_date, offsetDays: 1095 },
       ]
 
       checks.forEach(check => {
@@ -68,7 +56,13 @@ return NextResponse.json({ message: '通知時間外' })
         else if (diff <= 30) stage = 'warning'
         else if (diff <= 60) stage = 'info'
         if (stage) {
-          result.push({ ...vehicle, diffDays: diff, stage, type: check.type, target_date: base.toISOString().split('T')[0] })
+          result.push({
+            ...vehicle,
+            diffDays: diff,
+            stage,
+            type: check.type,
+            target_date: base.toISOString().split('T')[0],
+          })
         }
       })
     })
@@ -93,11 +87,13 @@ return NextResponse.json({ message: '通知時間外' })
       else if (diffDays <= 30) stage = 'warning'
       else if (diffDays <= 60) stage = 'info'
       if (!stage) continue
+
       const { data: vehicle, error } = await supabase
         .from('vehicles')
         .select('number_plate, car_model, color, branch_name, company_id')
         .eq('id', record.vehicle_id)
         .single()
+
       if (!error && vehicle) {
         result.push({
           ...vehicle,
