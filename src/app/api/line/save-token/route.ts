@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       token,
       company_name: companyName,
       company_id: companyId,
+      user_id: user.id,
     },
   ])
 

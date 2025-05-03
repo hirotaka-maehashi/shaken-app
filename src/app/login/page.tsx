@@ -25,34 +25,40 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    const { error: loginError } = await supabase.auth.signInWithPassword({
+    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (loginError) {
       setError('ログインに失敗しました。メールアドレスとパスワードを確認してください。')
-    } else {
-      const { data: userData } = await supabase.auth.getUser()
-      const metadata = userData.user?.user_metadata || {}
-
-      if (!metadata.trial_start) {
-        const today = new Date().toISOString()
-
-        const { error: updateError } = await supabase.auth.updateUser({
-          data: {
-            trial_start: today,
-            plan: 'trial_light',
-          },
-        })
-
-        if (updateError) {
-          console.error('ユーザー情報の更新に失敗しました：', updateError.message)
-        }
-      }
-
-      router.push('/dashboard')
+      return
     }
+
+    // ✅ Cookieにセッションを保存（これが重要！）
+    if (loginData.session) {
+      await supabase.auth.setSession(loginData.session)
+    }
+
+    const { data: userData } = await supabase.auth.getUser()
+    const metadata = userData.user?.user_metadata || {}
+
+    if (!metadata.trial_start) {
+      const today = new Date().toISOString()
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          trial_start: today,
+          plan: 'trial_light',
+        },
+      })
+
+      if (updateError) {
+        console.error('ユーザー情報の更新に失敗しました：', updateError.message)
+      }
+    }
+
+    router.push('/dashboard')
   }
 
   return (

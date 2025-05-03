@@ -18,6 +18,42 @@ export default function NewVehiclePage() {
   })
 
   useEffect(() => {
+    const fetchInitialData = async () => {
+      // 1. ユーザー情報を取得
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData?.user
+      const userCompanyId = user?.user_metadata?.company_id
+      const userId = user?.id
+  
+      if (!userCompanyId || !userId) {
+        console.warn('ユーザー情報または company_id が取得できません')
+        return
+      }
+  
+      // 2. 初期フォームデータに company_id をセット
+      setFormData((prev) => ({
+        ...prev,
+        company_id: userCompanyId,
+      }))
+  
+      // 3. 自分が登録した法人のみ取得
+      const { data: myCompanies, error } = await supabase
+        .from('companies')
+        .select('id, name, parent_company_id')
+        .eq('user_id', userId)
+  
+      if (error) {
+        console.error('companies取得エラー:', error.message)
+        return
+      }
+  
+      setCompanies(myCompanies || [])
+    }
+  
+    fetchInitialData()
+  }, [])  
+
+  useEffect(() => {
     const fetchCompanies = async () => {
       const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
       if (!error && data) {

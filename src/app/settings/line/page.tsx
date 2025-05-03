@@ -31,6 +31,7 @@ export default function LineSettingPage() {
         token,
         company_name: companyName,
         company_id: companyId,
+        user_id: user.id,
       },
     ])
 
@@ -41,12 +42,23 @@ export default function LineSettingPage() {
     }
   }
 
-  // 🔹LINEテスト送信処理（この部分はAPI経由でOK）
+  // 🔹LINEテスト送信処理（アクセストークンを明示的に送信）
   const handleTestSend = async () => {
+    const session = await supabase.auth.getSession()
+    const token = session.data.session?.access_token
+
+    console.log('🔍 クライアントアクセストークン:', token) // ✅ ← 追加
+
+    if (!token) {
+      alert('❌ セッショントークンが取得できません。ログイン状態を確認してください。')
+      return
+    }
+
     const res = await fetch('/api/line/test-send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`, // ✅ トークンを明示的に送信
       },
       body: JSON.stringify({
         companyName,
