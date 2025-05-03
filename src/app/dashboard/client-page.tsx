@@ -81,7 +81,7 @@ export default function DashboardPage() {
 
       if (!metadata.company_id && metadata.company_name) {
         // 会社名が既に存在しているかチェック
-        const { data: existingCompany, error: checkError } = await supabase
+        const { data: existingCompany, } = await supabase
           .from('companies')
           .select('id')
           .eq('name', metadata.company_name)

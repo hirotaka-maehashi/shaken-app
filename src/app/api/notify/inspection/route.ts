@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabase } from '@/utils/supabase-server'
 
 export const runtime = 'edge'
-export async function GET(req: NextRequest) {
+
+export async function GET() {
   const now = new Date()
   const currentHour = now.getHours()
 
@@ -13,7 +14,7 @@ return NextResponse.json({ message: '通知時間外' })
 }
 
   const today = new Date()
-  const result: any[] = []
+  const result: Record<string, unknown>[] = []
 
   // -------------------------------------
   // ✅ 1. 点検通知まとめ（vehicles）

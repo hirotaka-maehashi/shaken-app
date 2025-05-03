@@ -89,7 +89,7 @@ export default function PostSignupPage() {
     }
 
     saveCompanyName()
-  }, [])
+  }, [router]) // ✅ router を依存配列に追加！
 
   return (
     <main style={{ padding: '2rem', textAlign: 'center', fontSize: '1.2rem' }}>

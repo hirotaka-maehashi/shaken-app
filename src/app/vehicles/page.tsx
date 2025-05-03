@@ -187,7 +187,7 @@ useEffect(() => {
 
 useEffect(() => {
   const checkUser = async () => {
-    const { data: userData, error } = await supabase.auth.getUser()
+    const { data: userData, } = await supabase.auth.getUser()
     console.log('✅ auth.getUser() 結果:', userData)
     console.log('📌 company_id:', userData?.user?.user_metadata?.company_id)
   }
