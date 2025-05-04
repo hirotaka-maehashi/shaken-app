@@ -79,27 +79,46 @@ export default function DashboardPage() {
       const user = userData.user
       const metadata = user?.user_metadata || {}
 
-      // 会社IDが未登録で、会社名がある場合 → 自動登録
       if (!metadata.company_id && metadata.company_name) {
-        const { data: companyData, error: companyError } = await supabase
+        // 会社名が既に存在しているかチェック
+        const { data: existingCompany, } = await supabase
           .from('companies')
-          .insert([{ name: metadata.company_name }])
-          .select()
+          .select('id')
+          .eq('name', metadata.company_name)
           .single()
-
-        if (!companyError && companyData?.id) {
+      
+        if (existingCompany) {
+          // 既に会社がある → そのIDを user_metadata に保存
           const { error: updateError } = await supabase.auth.updateUser({
-            data: { company_id: companyData.id },
+            data: { company_id: existingCompany.id },
           })
           if (updateError) {
-            console.error('ユーザー更新失敗:', updateError.message)
+            console.error('ユーザー更新失敗（既存会社）:', updateError.message)
           } else {
-            console.log('✅ company_id を user_metadata に保存しました')
+            console.log('✅ 既存の company_id を user_metadata に保存しました')
           }
         } else {
-          console.error('会社登録失敗:', companyError?.message)
+          // 会社がない → insert
+          const { data: companyData, error: insertError } = await supabase
+            .from('companies')
+            .insert([{ name: metadata.company_name }])
+            .select()
+            .single()
+      
+          if (!insertError && companyData?.id) {
+            const { error: updateError } = await supabase.auth.updateUser({
+              data: { company_id: companyData.id },
+            })
+            if (updateError) {
+              console.error('ユーザー更新失敗:', updateError.message)
+            } else {
+              console.log('✅ 新規 company_id を user_metadata に保存しました')
+            }
+          } else {
+            console.error('会社登録失敗:', insertError?.message)
+          }
         }
-      }
+      }      
 
       // company_name を補完して保存
       if (!metadata.company_name && metadata.company_id) {

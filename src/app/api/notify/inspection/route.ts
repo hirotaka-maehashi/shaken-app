@@ -1,19 +1,7 @@
-import { NextResponse,} from 'next/server'
+import { NextResponse } from 'next/server'
 import { supabase } from '@/utils/supabase-server'
 
 export const runtime = 'edge'
-
-type NotificationItem = {
-  number_plate: string
-  car_model: string
-  color: string
-  branch_name: string
-  company_id: string
-  diffDays: number
-  stage: 'urgent' | 'warning' | 'info'
-  type: string
-  target_date: string
-}
 
 export async function GET() {
   const now = new Date()
@@ -26,7 +14,7 @@ export async function GET() {
   }
 
   const today = new Date()
-  const result: NotificationItem[] = []  // ✅ 修正済み
+  const result: Record<string, unknown>[] = []
 
   // -------------------------------------
   // ✅ 1. 点検通知まとめ（vehicles）

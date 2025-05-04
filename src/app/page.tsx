@@ -81,8 +81,14 @@ export default function HomePage() {
       </div>
     </div>
     <div className={styles.heroImage}>
-      <img src="/images/dashboard-ui.png" alt="車検くんUIイメージ" />
-    </div>
+  <Image
+    src="/images/dashboard-ui.png"
+    alt="車検くんUIイメージ"
+    width={600}  // 適宜調整
+    height={400} // 適宜調整
+    className={styles.heroImage}
+  />
+</div>
   </div>
 </section>
 

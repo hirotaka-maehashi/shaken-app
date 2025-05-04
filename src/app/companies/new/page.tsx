@@ -18,9 +18,10 @@ export default function NewCompanyPage() {
     try {
       const { data: userData } = await supabase.auth.getUser()
       const parentCompanyId = userData?.user?.user_metadata?.company_id
+      const userId = userData?.user?.id
 
-      if (!parentCompanyId) {
-        alert('親会社情報が取得できません。ログインし直してください。')
+      if (!parentCompanyId || !userId) {
+        alert('親会社情報またはユーザーIDが取得できません。ログインし直してください。')
         setLoading(false)
         return
       }
@@ -45,11 +46,12 @@ export default function NewCompanyPage() {
         return
       }
 
-      // ② 登録処理
+      // ② 登録処理（user_id追加済み）
       const { error: insertError } = await supabase.from('companies').insert([
         {
           name: companyName,
           parent_company_id: parentCompanyId,
+          user_id: userId, // ← ここが追加された点
         }
       ])
 

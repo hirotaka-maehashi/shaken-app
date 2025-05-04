@@ -171,15 +171,27 @@ const openNextInspectionEditModal = (vehicle: Vehicle) => {
 
   const [companies, setCompanies] = useState<{ id: string; name: string; parent_company_id?: string | null }[]>([])
 
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
-      if (!error && data) {
-        setCompanies(data)
-      }
+useEffect(() => {
+  const fetchCompanies = async () => {
+    const { data, error } = await supabase.from('companies').select('id, name, parent_company_id')
+    if (!error && data) {
+      console.log('✅ 取得したcompanies:', data)  // ← 追加！
+      setCompanies(data)
     }
-    fetchCompanies()
-  }, [])
+  }
+  fetchCompanies()
+}, [])
+
+useEffect(() => {
+  const checkUser = async () => {
+    const { data: userData, } = await supabase.auth.getUser()
+    console.log('✅ auth.getUser() 結果:', userData)
+    console.log('📌 company_id:', userData?.user?.user_metadata?.company_id)
+  }
+
+  checkUser()
+}, [])
+
 
 const [displayMode, setDisplayMode] = useState('all') // company または branch を切り替え
 const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set())
