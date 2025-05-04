@@ -1,9 +1,8 @@
 {
-    "crons": [
-      {
-        "path": "/api/notify/inspection",
-        "schedule": "55 8 * * *"
-      }
-    ]
-  }
-  
+  "crons": [
+    {
+      "path": "/api/notify/inspection",
+      "schedule": "5 0 * * *"
+    }
+  ]
+}
