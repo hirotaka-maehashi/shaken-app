@@ -5,12 +5,16 @@ export const runtime = 'edge'
 
 export async function GET() {
   const now = new Date()
+  console.log("🚀 Vercel実行時刻（UTC）:", now.toISOString())
+
   const currentHour = now.getHours()
 
-  // ✅ 通知は朝9時のみ
-  if (currentHour !== 9) {
+  // ⬇️ 環境ごとに制御（本番のみ9時制限）
+  const isProd = process.env.NODE_ENV === 'production'
+
+  if (isProd && currentHour !== 9) {
     console.log('⏰ 通知対象外の時間です（現在: ' + currentHour + '時）')
-    return NextResponse.json({ message: '通知時間外' })
+    return NextResponse.json({ message: '通知時間外（本番のみ制限）' })
   }
 
   const today = new Date()
