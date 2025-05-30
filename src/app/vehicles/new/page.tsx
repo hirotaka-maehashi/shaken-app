@@ -396,6 +396,9 @@ const companyIdToUse = formData.company_id
         {/* ボタン */}
         <div className={styles.buttonGroupWrapper}>
           <div className={styles.sideButtons}>
+            <button type="submit" className={styles.primaryButton}>
+            登録する
+          </button>
             <button
               type="button"
               onClick={() => router.push('/dashboard')}
@@ -403,17 +406,12 @@ const companyIdToUse = formData.company_id
             >
               ← ダッシュボードに戻る
             </button>
-  
-            <Link href="/vehicles">
-              <button className={styles.secondaryButton}>
-                <Search size={18} /> 登録一覧を確認する
-              </button>
-            </Link>
+  <Link href="/vehicles" legacyBehavior>
+  <a className={styles.secondaryButton}>
+    <Search size={18} /> 登録一覧を確認する
+  </a>
+</Link>
           </div>
-  
-          <button type="submit" className={styles.primaryButton}>
-            登録する
-          </button>
         </div>
       </form>
     </div>

@@ -46,7 +46,6 @@ export default function DashboardPage() {
   const [maintenanceCount, setMaintenanceCount] = useState<number>(0)
   const [maintenanceData, setMaintenanceData] = useState<MaintenanceSchedule[]>([])
   const [openDetails, setOpenDetails] = useState<{ [key: string]: boolean }>({})
-
   const router = useRouter()
   const now = new Date()
   const currentMonth = now.getMonth() + 1
@@ -138,23 +137,53 @@ export default function DashboardPage() {
         setCompanyName(metadata.company_name || user?.email || '')
       }
 
-      setPlan(metadata.plan || '')
+ if (metadata.company_id) {
+  const { data: companyData } = await supabase
+    .from('companies')
+    .select('plan, trial_start')
+    .eq('id', metadata.company_id)
+    .single()
 
-      if (metadata.plan === 'trial_light') {
-        const trialStartRaw = metadata.trial_start
-        if (trialStartRaw) {
-          const startDate = new Date(trialStartRaw)
-          const today = new Date()
-          const msPerDay = 1000 * 60 * 60 * 24
-          const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / msPerDay)
-          const remaining = 14 - daysPassed
-          setTrialRemainingDays(remaining)
-          setIsTrialExpired(remaining <= 0)
-        } else {
-          setTrialRemainingDays(14)
-          setIsTrialExpired(false)
-        }
-      }
+  if (!companyData?.plan || !companyData?.trial_start) {
+    const today = new Date().toISOString()
+
+    const { error: updateError } = await supabase
+      .from('companies')
+      .update({
+        plan: 'trial_light',
+        trial_start: today,
+      })
+      .eq('id', metadata.company_id)
+
+    if (updateError) {
+      console.error('❌ プラン初期化失敗:', updateError.message)
+    } else {
+      console.log('✅ plan と trial_start を初期設定しました')
+    }
+
+    // 📌 初期設定した値で即反映する
+    setPlan('trial_light')
+    setTrialRemainingDays(14)
+    setIsTrialExpired(false)
+
+  } else {
+    // 📌 plan が既に存在する場合はこちらで反映
+    setPlan(companyData.plan)
+
+    if (companyData.plan === 'trial_light') {
+      const startDate = new Date(companyData.trial_start)
+      const today = new Date()
+      const msPerDay = 1000 * 60 * 60 * 24
+      const daysPassed = Math.floor((today.getTime() - startDate.getTime()) / msPerDay)
+      const remaining = 14 - daysPassed
+      setTrialRemainingDays(remaining)
+      setIsTrialExpired(remaining <= 0)
+    } else {
+      setTrialRemainingDays(null)
+      setIsTrialExpired(false)
+    }
+  }
+}
 
 // ① 子会社も含めて取得
 const { data: subsidiaries } = await supabase
@@ -421,12 +450,12 @@ console.log('🗓️ maintenance?.next_due_date:', maintenance?.next_due_date)
   <div className={styles.buttons}>
     <Link href="/vehicles/new">
       <button className={styles.primaryButton}>
-        <PlusCircle size={18} /> 新しい車両を登録する
+        <PlusCircle size={18} /> 新しい車両登録
       </button>
     </Link>
     <Link href="/vehicles">
       <button className={styles.secondaryButton}>
-        <Search size={18} /> 登録一覧を確認する
+        <Search size={18} /> 登録一覧
       </button>
     </Link>
   </div>
@@ -436,30 +465,28 @@ console.log('🗓️ maintenance?.next_due_date:', maintenance?.next_due_date)
 <div className={styles.buttons}>
   <Link href="/companies/new">
     <button className={styles.subsidiaryButton}>
-      + 子会社を登録する
+      + 子会社を登録
     </button>
   </Link>
 
   <Link href="/settings/line">
     <button className={styles.subsidiaryButton}>
-      + LINE設定をする
+      + LINEを設定
     </button>
   </Link>
 </div>
-
-
 </div>
   
-        <div className={styles.settingsArea}>
-          <div className={styles.linkGroup}>
-            <a href="/plan/settings" className={styles.planLink}>
-              <Settings size={16} /> プラン変更・解約
-            </a>
-            <button onClick={handleLogout} className={styles.logoutLink}>
-              <LogOut size={16} /> ログアウト
-            </button>
-          </div>
-        </div>
+       <div className={styles.settingsArea}>
+  <div className={styles.linkGroup}>
+    <Link href="/plans" className={styles.planLink}>
+      <Settings size={16} /> プラン変更・解約
+    </Link>
+    <button onClick={handleLogout} className={styles.logoutLink}>
+      <LogOut size={16} /> ログアウト
+    </button>
+  </div>
+</div>
       </div>
     </div>
   )  

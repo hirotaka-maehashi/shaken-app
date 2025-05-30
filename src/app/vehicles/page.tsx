@@ -644,10 +644,10 @@ return (
     {/* 戻る・登録ボタン */}
     <div className={styles.buttonWrapper}>
       <Link href="/dashboard">
-        <button className={styles.secondaryButton}><ArrowLeft size={16} /> ダッシュボードに戻る</button>
+        <button className={styles.secondaryButton}><ArrowLeft size={16} /> ダッシュボード</button>
       </Link>
       <Link href="/vehicles/new">
-        <button className={styles.primaryButton}><PlusCircle size={16} /> 車両を登録する</button>
+        <button className={styles.primaryButton}><PlusCircle size={16} /> 車両を登録</button>
       </Link>
     </div>
 

@@ -35,11 +35,18 @@ export default function LoginPage() {
       return
     }
 
-    // ✅ Cookieにセッションを保存（これが重要！）
+    // ✅ セッション確認・保存ログ
     if (loginData.session) {
-      await supabase.auth.setSession(loginData.session)
+      console.log('✅ ログイン成功:', loginData.user)
+      console.log('✅ セッション:', loginData.session)
+
+      // ✅ 少し待ってから遷移（セッションの書き込みを保証）
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 800)
     }
 
+    // ✅ トライアルデータ初期化（初回ログイン時）
     const { data: userData } = await supabase.auth.getUser()
     const metadata = userData.user?.user_metadata || {}
 
@@ -57,8 +64,6 @@ export default function LoginPage() {
         console.error('ユーザー情報の更新に失敗しました：', updateError.message)
       }
     }
-
-    router.push('/dashboard')
   }
 
   return (

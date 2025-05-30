@@ -37,6 +37,9 @@
     background-color: var(--color-bg);
     border-radius: var(--radius);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding-bottom: 180px;
   }  
   
   .heading {
