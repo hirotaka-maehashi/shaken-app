@@ -7,10 +7,10 @@ export async function POST(req: NextRequest) {
   const { plan, quantity, user_id } = await req.json()
 
   const priceMap: Record<string, string> = {
-    light: 'price_1RVNo5GVBAikpCoVL3gecXQq',
-    standard: 'price_1RVNq4GVBAikpCoVq1bEwN07',
-    premium: 'price_1RVNqcGVBAikpCoVP3prCbSg',
-  }
+  light: 'price_1RVNo5GVBAikpCoVL3gecXQq',
+  standard: 'price_1RVNq4GVBAikpCoVq1bEwN07',
+  premium: 'price_1RVNqcGVBAikpCoVP3prCbSg',
+}
 
   const priceId = priceMap[plan]
 
