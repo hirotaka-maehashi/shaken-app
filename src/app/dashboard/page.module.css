@@ -420,3 +420,20 @@
   font-weight: bold;
   margin-right: 8px;
 }
+
+.legalLinks {
+  text-align: center;
+  font-size: 0.85rem;
+  margin-top: 4rem;
+  color: #555;
+}
+
+.legalLinks a {
+  margin: 0 0.5rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.legalLinks a:hover {
+  text-decoration: underline;
+}

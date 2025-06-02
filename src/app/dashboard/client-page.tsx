@@ -477,7 +477,7 @@ console.log('🗓️ maintenance?.next_due_date:', maintenance?.next_due_date)
 </div>
 </div>
   
-       <div className={styles.settingsArea}>
+<div className={styles.settingsArea}>
   <div className={styles.linkGroup}>
     <Link href="/plans" className={styles.planLink}>
       <Settings size={16} /> プラン変更・解約
@@ -486,6 +486,13 @@ console.log('🗓️ maintenance?.next_due_date:', maintenance?.next_due_date)
       <LogOut size={16} /> ログアウト
     </button>
   </div>
+</div>
+<div className={styles.legalLinks}>
+  <Link href="/tokushoho">特定商取引法に基づく表記</Link>
+  <span>｜</span>
+  <Link href="/privacy">プライバシーポリシー</Link>
+  <span>｜</span>
+  <Link href="/terms">利用規約</Link>
 </div>
       </div>
     </div>
