@@ -7,9 +7,9 @@ export async function POST(req: NextRequest) {
   const { plan, quantity, user_id } = await req.json()
 
   const priceMap: Record<string, string> = {
-    light: 'price_1RGHCA2eCwQ1Wyg3kgSXJhU1',
-    standard: 'price_1RGHIZ2eCwQ1Wyg3amCvZefp',
-    premium: 'price_1RGHJ92eCwQ1Wyg3fQIWZHFH',
+    light: 'price_1RVNo5GVBAikpCoVL3gecXQq',
+    standard: 'price_1RVNq4GVBAikpCoVq1bEwN07',
+    premium: 'price_1RVNqcGVBAikpCoVP3prCbSg',
   }
 
   const priceId = priceMap[plan]
@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
         quantity: quantity || 1,
       },
     ],
-    success_url: 'http://localhost:3000/dashboard?status=success',
-    cancel_url: 'http://localhost:3000/plans?status=cancelled',
+    success_url: 'https://shakenapp.vercel.app/dashboard?status=success',
+    cancel_url: 'https://shakenapp.vercel.app/plans?status=cancelled',
     metadata: {
       user_id,
       plan,
