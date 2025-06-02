@@ -18,11 +18,15 @@ export default function PrivacyPolicyPage() {
       <p className={styles.item}><strong>4. 管理体制：</strong><br /> 個人情報への不正アクセス・漏えい・改ざん等を防止するため、必要かつ適切な管理体制を構築します。</p>
       <p className={styles.item}><strong>5. お問い合わせ：</strong><br /> 本ポリシーに関するお問い合わせは、以下の連絡先までお願いいたします。<br /> starcorporation2024@gmail.com</p>
 
-      <div className={styles.backButtonWrapper}>
-        <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
-          ← ダッシュボードに戻る
-        </button>
-      </div>
+      <div className={styles.buttonWrapper}>
+  <button
+    onClick={() => router.push('/')}
+    className={styles.backButton}
+  >
+    ← TOPページに戻る
+  </button>
+</div>
+
     </div>
   )
 }

@@ -19,11 +19,14 @@ export default function TermsPage() {
       <p className={styles.item}><strong>5. 免責事項：</strong><br /> 当社は、サービスの中断・停止・データ消失により生じた損害について、当社に故意または重大な過失がある場合を除き一切の責任を負いません。</p>
       <p className={styles.item}><strong>6. 準拠法・管轄：</strong><br /> 本規約は日本法に準拠し、本サービスに関する紛争は、名古屋地方裁判所を専属的合意管轄とします。</p>
 
-      <div className={styles.backButtonWrapper}>
-        <button onClick={() => router.push('/dashboard')} className={styles.backButton}>
-          ← ダッシュボードに戻る
-        </button>
-      </div>
+      <div className={styles.buttonWrapper}>
+  <button
+    onClick={() => router.push('/')}
+    className={styles.backButton}
+  >
+    ← TOPページに戻る
+  </button>
+</div>
     </div>
   )
 }

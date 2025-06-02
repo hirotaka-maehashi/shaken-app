@@ -327,14 +327,15 @@ export default function HomePage() {
 
 
       {/* フッター */}
-      <footer className={styles.footer}>
-        <p>© 2025 車検くん</p>
-        <ul className={styles.footerLinks}>
-          <li><a href="/terms">利用規約</a></li>
-          <li><a href="/privacy">プライバシーポリシー</a></li>
-          <li><a href="/contact">お問い合わせ</a></li>
-        </ul>
-      </footer>
+<footer className={styles.footer}>
+  <p>© 2025 車検くん</p>
+  <ul className={styles.footerLinks}>
+    <li><a href="/terms">利用規約</a></li>
+    <li><a href="/privacy">プライバシーポリシー</a></li>
+    <li><a href="/tokushoho">特定商取引法に基づく表記</a></li>
+    <li><a href="/contact">お問い合わせ</a></li>
+  </ul>
+</footer>
     </div>
   )
 }
